@@ -143,3 +143,13 @@
   .btn-dl::after, .gate__tag::before, .ledger tr[data-g].hl .grp i { animation: none; }
   .ledger--stagger tr:not(:first-child), .spread__pt, .spread__pt span, .spread__line::after { transition: none; }
 }
+
+.test-note { margin: 16px 0 0; max-width: 56ch; padding: 2px 0 2px 14px; border-left: 2px solid var(--gold); font-size: 12.5px; line-height: 1.65; color: var(--text-dim); }
+.test-note b { color: var(--gold); font-weight: 600; }
+.test-note code { font-size: .95em; color: var(--gold-bright); }
+.test-note a { color: var(--gold-bright); text-decoration: none; border-bottom: 1px solid rgba(197,160,89,.4); transition: color .2s, border-color .2s; }
+.test-note a:hover { color: var(--text); border-color: var(--gold); }
+.test-note--block { max-width: 760px; margin-top: 30px; padding: 18px 22px; border: 1px solid var(--line); border-left: 2px solid var(--gold); background: rgba(0,0,0,.18); font-size: 14px; }
+.test-note--block h3 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
+.test-note--block p { margin: 0; }
+.gate__card .test-note { margin-top: 18px; max-width: none; }
