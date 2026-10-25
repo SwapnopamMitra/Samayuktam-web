@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specs — Samayuktam</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/film.css">
+<link rel="stylesheet" href="css/festive.css">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/terminal.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/film.js" defer></script>
+<script src="js/lightbox.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+
+<nav class="site-nav">
+  <div class="brand"><img src="assets/images/page_logo.png" alt="Samayuktam logo"><span class="serif" style="font-weight:600;">Samayuktam</span></div>
+  <div class="links">
+    <a href="index.html">The Problem</a>
+    <a href="journey.html">Journey</a>
+    <a href="specs.html" class="active">Specs</a>
+    <a href="pilot.html">Pilot</a>
+  </div>
+</nav>
+
+<main>
+  <section style="border-top:none;">
+    <div class="section-head reveal-text">
+      <h1>The Specifications</h1>
+      <p>The architecture and math behind the canonicalization layer.</p>
+    </div>
+  </section>
+
+  <section id="spcmp" style="padding-top:0;border-top:none;">
+    <div class="section-head reveal-text">
+      <h2>1. SPCMP (Float32 Container &amp; Canonicalization)</h2>
+    </div>
+    <div class="spec reveal-text">
+      <div class="spec__row"><span class="spec__label">The Problem</span><p>IEEE-754 binary32 values diverge across heterogeneous hardware due to NaN payloads, signed zeros, and FMA rounding differences.</p></div>
+      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP is a reversible float32 container format that enforces a deterministic total order.</p></div>
+      <ul class="spec__list">
+        <li><b>Canonicalization:</b> All NaN payloads collapse to <code>0x7FC00000</code>. <code>-0.0</code> collapses to <code>+0.0</code>. All other floats remain bit-exact.</li>
+        <li><b>Ordering:</b> Bijective mapping to <code>uint32</code> for unsigned comparison.</li>
+        <li><b>Compression:</b> Order-0/1/2 predictive delta transform followed by Zstandard.</li>
+        <li><b>Verification:</b> Fail-closed SHA-256 Merkle root over the uncompressed predictive stream.</li>
+      </ul>
+    </div>
+
+    <h3 class="spec__sub reveal-text">The 4 Commands</h3>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">./spcmp</span></div>
+      <pre class="terminal-body"><span class="term-dim"># 1. Sort and compress the original array</span>
+<span class="term-cmd">./spcmp sort input.bin</span>
+
+<span class="term-dim"># 2. Verify the Merkle commitment</span>
+<span class="term-cmd">python3 verify.py input.sorted.pcmp --info</span>
+
+<span class="term-dim"># 3. Reconstruct the original array</span>
+<span class="term-cmd">./spcmp unsort input</span>
+
+<span class="term-dim"># 4. Compare for byte-for-byte lossless recovery</span>
+<span class="term-cmd">cmp input.bin input.unsorted.bin</span></pre>
+    </div>
+
+    <h3 class="spec__sub reveal-text">verify.py output</h3>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">verify.py &middot; one file</span></div>
+      <pre class="terminal-body"><span class="term-dim"># filename.sorted.pcmp verifies one file; *.pcmp verifies every .pcmp file in the directory</span>
+<span class="term-dim">$ </span><span class="term-cmd">python3 verify.py model_weights_1m.sorted.pcmp --info</span>
+
+<span class="term-dim">=== model_weights_1m.sorted.pcmp ===</span>
+file                        : model_weights_1m.sorted.pcmp
+valid                       : <span class="term-ok">True</span>
+error                       : None
+magic                       : PCMP
+version                     : 1
+order                       : 2
+n                           : 1000000
+ordering_ok                 : <span class="term-ok">True</span>
+ordering_violation_index    : None
+permutation_ok              : <span class="term-ok">True</span>
+cvd_ok                      : <span class="term-ok">True</span>
+cvd_violation_index         : None
+cvd_violation_reason        : None
+meta_ok                     : <span class="term-ok">True</span>
+proof_type                  : 1
+ordering_mode               : 2
+chunk_bytes                 : 4194304
+total_n                     : 1000000
+num_chunks                  : 1
+stored_merkle_root          : <span class="term-warn">306bbd79ae6cc9843015f59134e95963545d405bb88f788c1e8d1ab83eeda8ab</span>
+computed_merkle_root        : <span class="term-warn">306bbd79ae6cc9843015f59134e95963545d405bb88f788c1e8d1ab83eeda8ab</span>
+merkle_match                : <span class="term-ok">True</span>
+footer_magic                : 0x50434d50
+footer_version              : 1</pre>
+    </div>
+  </section>
+
+  <section id="cagm">
+    <div class="section-head reveal-text">
+      <h2>2. CAGM (Deterministic ML Training)</h2>
+    </div>
+    <div class="spec reveal-text">
+      <div class="spec__row"><span class="spec__label">The Problem</span><p>Standard ML training pipelines rely on floating-point math, meaning the exact same dataset and hyperparameters will produce different model weights depending on the GPU or CPU used.</p></div>
+      <div class="spec__row"><span class="spec__label">The Solution</span><p>CAGM is a fixed-point integer classifier (Q16.16) that completely removes floating-point arithmetic from the training loop.</p></div>
+      <ul class="spec__list">
+        <li><b>The Integrity Engine (IE):</b> Canonicalizes logits at layer boundaries to ensure bit-exact hashes across compilers and hardware.</li>
+        <li><b>Trajectory Proof:</b> Emits a 64-character SHA-256 proof that binds the weights, gradients, activations, and epoch order into a single cryptographic commitment.</li>
+        <li><b>Output Contract:</b> Strict stdout output: <code>accuracy</code>, <code>proof</code>, and <code>ie_verify</code>.</li>
+      </ul>
+    </div>
+
+    <div class="terminal glass reveal-image" style="margin-top:8px;">
+      <div class="terminal-bar"><span class="terminal-title">./cagm</span></div>
+      <pre class="terminal-body"><span class="term-dim">$ </span><span class="term-cmd">./cagm diabetes_cagm_ready.csv --hidden 64 --epochs 100 --batch 64 --lr 0.005</span>
+<span class="term-dim">License OK &mdash; server check: </span><span class="term-pass">PASS</span><span class="term-dim"> | uses remaining: </span><span class="term-ok">15</span>
+<span class="term-dim">Loaded: </span>diabetes_cagm_ready.csv<span class="term-dim">  rows=768  features=8  classes=2</span>
+<span class="term-dim">Early stopping at epoch 29 (best=9, acc=0.8333)</span>
+accuracy  <span class="term-ok">0.785156</span>
+proof     <span class="term-warn">f8e66dd34cb782bf090211c6c63c0342999fe4f1cf5c8c55b54f532e8071c975</span>
+ie_verify <span class="term-pass">PASS</span><span class="term-dim">  (hash=0x59E4A8B7)</span></pre>
+    </div>
+
+    <h3 class="spec__sub reveal-text">Cross-Device Proof</h3>
+    <table class="ledger reveal-text">
+      <tr><th>Machine</th><th>Proof hash (HAM10000_metadata &middot; cagm_cpu, truncated)</th></tr>
+      <tr><td>Intel Xeon (CPU)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
+      <tr><td>AMD EPYC (CPU)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
+      <tr><td>NVIDIA T4 (GPU)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
+      <tr><td>Google TPU (Host)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
+    </table>
+    <div class="prints prints--single">
+      <figure class="print glass reveal-image">
+        <img src="assets/images/CAGM/cagm_cross_device_benchmark.png" alt="CAGM Cross-Device Benchmark Report: accuracy and proof hashes identical across four machines" decoding="async" data-zoom>
+        <figcaption class="print__cap"><b>A</b>Cross-device benchmark: all proofs identical &middot; click to inspect</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="validation">
+    <div class="section-head reveal-text">
+      <h2>3. Test Suites &amp; Validation</h2>
+    </div>
+    <ul class="spec__list reveal-text">
+      <li><b>SPCMP:</b> 42/42 adversarial assertions passed (NaNs, subnormals, extreme boundaries).</li>
+      <li><b>CAGM:</b> 41/41 verification assertions passed (determinism, overflow guards, adversarial data).</li>
+      <li><b>CAGM vs Sklearn:</b> Benchmarked against 6 standard ML models across 5 datasets, maintaining 100% deterministic proof matching.</li>
+    </ul>
+  </section>
+
+  <section id="reports">
+    <div class="section-head reveal-text">
+      <h2>Test Reports</h2>
+      <p>Primary source documents. Not marketing copy.</p>
+    </div>
+    <div class="doc-subhead mono reveal-text" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">CAGM</div>
+    <table class="ledger reveal-text" style="margin-bottom:28px;">
+      <tr><th>Report</th><th>Scope</th><th>Link</th></tr>
+      <tr><td>CAGM Verification Report <span style="color:var(--sage); font-size:12px;">41/41 PASS</span></td><td>Determinism, IE canonicalisation, degenerate inputs, overflow guards</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/CAGM/cagm_Verification.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>CAGM vs sklearn</td><td>6 sklearn baselines, 5 datasets, stratified k-fold CV, ctypes-native library</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/CAGM/CAGM_Sklearn.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>CAGM Cross-Device Benchmark</td><td>Accuracy and proof-hash comparison, 4 machines, CPU/GPU/TPU — all proofs identical</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/CAGM/cagm%20Benchmark_Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+    </table>
+
+    <div class="doc-subhead mono reveal-text" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">SPCMP / Samayuktam</div>
+    <table class="ledger reveal-text">
+      <tr><th>Report</th><th>Scope</th><th>Link</th></tr>
+      <tr><td>PCMP / SPCMP Verification Report <span style="color:var(--sage); font-size:12px;">42/42 PASS</span></td><td>Every IEEE-754 edge case and degenerate array shape, checked against an independent Python oracle</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/PCMP-SPCMP%20Verification%20Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>SPCMP Cross-Hardware Verification</td><td>Google CPU, TPU, GPU, and a native GPU node — identical Merkle root and hash on all four</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP_Cross_Hardware_Verification_Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Cross-Machine Determinism</td><td>20 sort runs, 4 heterogeneous machines, 5 files each — zero divergent hashes</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/Cross-Machine-Determinism.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>SPCMP Determinism Report</td><td>Top-k / bottom-k convergence; documents the honest scalar-reduction limit</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP%20DETERMINISM%20Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Aerospace Verification Proof</td><td>40/40 assertions — radiation bit-flip absorption, telemetry compression, GNC-loop determinism</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP_Aerospace_Proof_Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Scale Test Report</td><td>32 runs, 100k to 1B float32 elements, 8 data patterns — zero failures</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/samayuktam_scale_report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Samayuktam Sorting Benchmark</td><td>CPU/GPU sort timing vs NumPy quicksort/mergesort/stable, up to 4.5&times; speedup</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/Processing%20benchmark.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+    </table>
+  </section>
+
+  <section id="cta">
+    <div class="section-head reveal-text">
+      <h2>Ready to test it against your pipeline?</h2>
+    </div>
+    <div class="casefile__cta" style="margin-top:0;">
+      <a class="cta cta--main" href="pilot.html">Request Pilot Access</a>
+      <a class="cta" href="#reports">Download Test Reports</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>&copy; 2026 Samayuktam. Solo-built.</span>
+  <div>
+    <a href="https://github.com/SwapnopamMitra" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:swapnopam@samayuktam.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>

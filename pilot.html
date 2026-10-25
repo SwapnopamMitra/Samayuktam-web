@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pilot — Samayuktam</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/film.css">
+<link rel="stylesheet" href="css/festive.css">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/terminal.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/film.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+
+<nav class="site-nav">
+  <div class="brand"><img src="assets/images/page_logo.png" alt="Samayuktam logo"><span class="serif" style="font-weight:600;">Samayuktam</span></div>
+  <div class="links">
+    <a href="index.html">The Problem</a>
+    <a href="journey.html">Journey</a>
+    <a href="specs.html">Specs</a>
+    <a href="pilot.html" class="active">Pilot</a>
+  </div>
+</nav>
+
+<main>
+  <section style="border-top:none;">
+    <div class="section-head reveal-text">
+      <h1>The Pilot Program</h1>
+      <p>Request a hardware-bound binary for technical evaluation.</p>
+    </div>
+    <p class="pilot-hook reveal-text">Your float32 data compresses. Ours also gives you a Merkle root. Same size reduction, plus tamper-evidence. Four commands to verify.</p>
+  </section>
+
+  <section id="what-you-get" style="padding-top:0;border-top:none;">
+    <div class="section-head reveal-text">
+      <h2>1. What You Get</h2>
+    </div>
+    <div class="spec reveal-text">
+      <p style="font-size:15px;line-height:1.75;color:var(--text-dim);margin:0 0 22px;">The pilot is a fully functional, cryptographically bound evaluation of the Samayuktam stack. It is not a SaaS subscription. It is a local binary that proves the architecture works on your specific hardware.</p>
+    </div>
+    <ul class="spec__list reveal-text">
+      <li><b>Hardware-Bound:</b> The binary is locked to your machine&rsquo;s MAC address and CPU ID.</li>
+      <li><b>Online-Verified:</b> Every run performs an HTTPS round-trip to our licensing server to verify use count. No offline mode.</li>
+      <li><b>Full Output:</b> Generates the actual Merkle roots, canonicalized <code>.pcmp</code> files, and CAGM SHA-256 training proofs.</li>
+    </ul>
+  </section>
+
+  <section id="tiers">
+    <div class="section-head reveal-text">
+      <h2>2. The Evaluation Tiers</h2>
+    </div>
+    <div class="pricing-grid glass reveal-image">
+      <div class="pricing-card">
+        <div class="serif" style="font-size:18px;">SPCMP (Float32 Container)</div>
+        <div class="price">$2,500</div>
+        <div class="tier__meta">10 runs &middot; 30 days</div>
+        <p class="tier__txt">Full canonical-ordering, compression, and fail-closed verification pipeline.</p>
+        <a href="mailto:swapnopam@samayuktam.com?subject=SPCMP%20Pilot%20Request" class="btn" style="margin-top:20px;">Request SPCMP</a>
+      </div>
+      <div class="pricing-card">
+        <div class="serif" style="font-size:18px;">CAGM (Deterministic ML)</div>
+        <div class="price">$2,000</div>
+        <div class="tier__meta">10 runs &middot; 30 days</div>
+        <p class="tier__txt">Fixed-point classifier with full Integrity Engine and trajectory-proof output.</p>
+        <a href="mailto:swapnopam@samayuktam.com?subject=CAGM%20Pilot%20Request" class="btn" style="margin-top:20px;">Request CAGM</a>
+      </div>
+      <div class="pricing-card pricing-card--bundle">
+        <div class="serif" style="font-size:18px;">The Bundle (Full Stack)</div>
+        <div class="price">$3,500 <span class="tier__save">(Save $1,000)</span></div>
+        <div class="tier__meta">10 runs each &middot; 30 days</div>
+        <p class="tier__txt">Both binaries, both fingerprint-bound.</p>
+        <a href="mailto:swapnopam@samayuktam.com?subject=Bundle%20Pilot%20Request" class="btn btn-solid" style="margin-top:20px;">Request Bundle</a>
+      </div>
+    </div>
+    <p class="tier__note reveal-text">All prices are visible without contact. No asterisks. A custom trial of 5 uses / 1 day may be granted at no cost, at sole discretion, via email request.</p>
+  </section>
+
+  <section id="handshake">
+    <div class="section-head reveal-text">
+      <h2>3. How to Get Bound (The Handshake)</h2>
+      <p>To request a pilot, you do not fill out a form. You email us the hardware fingerprint of the machine you intend to test.</p>
+    </div>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">hardware fingerprint &middot; run all four</span></div>
+      <pre class="terminal-body"><span class="term-dim"># 01 &middot; Machine ID</span>
+<span class="term-cmd">cat /etc/machine-id</span>
+<span class="term-dim"># Persistent OS-level machine identifier.</span>
+
+<span class="term-dim"># 02 &middot; MAC address</span>
+<span class="term-cmd">ip link show | grep "link/ether" | awk '{print $2}' | head -1</span>
+<span class="term-dim"># Primary NIC hardware address.</span>
+
+<span class="term-dim"># 03 &middot; CPU model</span>
+<span class="term-cmd">grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2 | xargs</span>
+<span class="term-dim"># CPU model name from /proc/cpuinfo.</span>
+
+<span class="term-dim"># 04 &middot; CPU physical ID</span>
+<span class="term-cmd">grep "physical id" /proc/cpuinfo | head -1 | cut -d: -f2 | xargs</span>
+<span class="term-dim"># Physical socket ID from /proc/cpuinfo.</span></pre>
+    </div>
+    <p class="tier__send reveal-text">Send all four values to: <a href="mailto:swapnopam@samayuktam.com"><code>swapnopam@samayuktam.com</code></a></p>
+  </section>
+
+  <section id="constraints">
+    <div class="section-head reveal-text">
+      <h2>4. Technical Constraints (Read Before Applying)</h2>
+    </div>
+    <ul class="spec__list reveal-text">
+      <li><b>Linux Only:</b> Requires a live internet connection on every run.</li>
+      <li><b>Supported Environments:</b> WSL2 and Google Colab are supported for single-session evaluation.</li>
+      <li><b>Unsupported Environments:</b> Snapshot/revert-style VMs (VirtualBox, VMware) are not supported, as reverting a snapshot breaks the fingerprint assumption by design. Ephemeral runtimes that change MAC/Machine ID will fail the check.</li>
+      <li>Evaluation is under mutual NDA. The core method and internal constants remain sealed.</li>
+    </ul>
+  </section>
+
+  <section id="cta">
+    <div class="section-head reveal-text">
+      <h2>Ready to start the handshake?</h2>
+    </div>
+    <div class="casefile__cta" style="margin-top:0;">
+      <a class="cta cta--main" href="mailto:swapnopam@samayuktam.com?subject=Pilot%20Request%20%E2%80%94%20Hardware%20Fingerprint&amp;body=Machine%20ID%3A%0AMAC%20Address%3A%0ACPU%20Model%3A%0ACPU%20Physical%20ID%3A%0A">Email Hardware Fingerprint</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>&copy; 2026 Samayuktam. Solo-built.</span>
+  <div>
+    <a href="https://github.com/SwapnopamMitra" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:swapnopam@samayuktam.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>

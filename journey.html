@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journey — Samayuktam</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/film.css">
+<link rel="stylesheet" href="css/festive.css">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/terminal.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/film.js" defer></script>
+<script src="js/story.js" defer></script>
+<script src="js/lightbox.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+
+<nav class="site-nav">
+  <div class="brand"><img src="assets/images/page_logo.png" alt="Samayuktam logo"><span class="serif" style="font-weight:600;">Samayuktam</span></div>
+  <div class="links">
+    <a href="index.html">The Problem</a>
+    <a href="journey.html" class="active">Journey</a>
+    <a href="specs.html">Specs</a>
+    <a href="pilot.html">Pilot</a>
+  </div>
+</nav>
+
+<main>
+  <section style="border-top:none;">
+    <div class="section-head reveal-text">
+      <h2>The Journey</h2>
+      <p>Five nodes. One obsession with determinism, followed through sorting, storage, and search.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="t-node t-node--story reveal-text" id="sorting">
+        <span class="t-date">Nov 2025 &ndash; Jan 2026</span>
+        <h3>The Sorting Obsession</h3>
+
+        <ol class="milestones" aria-label="PCMP timeline">
+          <li><i class="diya" aria-hidden="true"></i><time>Nov 2025</time><span>Work begins</span></li>
+          <li><i class="diya" aria-hidden="true"></i><time>Dec 2025</time><span>v-alpha &middot; PCMP prototype</span></li>
+          <li><i class="diya" aria-hidden="true"></i><time>Jan 2026</time><span>Version 1</span></li>
+        </ol>
+
+        <div class="story">
+          <div class="story__text" data-type>
+            <p>It started with a simple, stubborn question: can the theoretical floor of O(n log n) be broken?</p>
+            <p>I spent weeks in the trenches of sorting algorithms. When I finally broke past the standard comparison-based limits, I didn&rsquo;t stop. A new question took over: what if the data could compress while it sorted? Not as a separate step after the fact, but as an integrated part of the ordering process.</p>
+            <p>And then came the idea that most engineers would call impossible: <em>unsort</em>.</p>
+            <p>If I take an array, sort it, and compress it, can I perfectly reconstruct the original array, byte for byte? Not a lossy approximation. The exact original sequence.</p>
+            <p>By December 2025, I had a working prototype. I called it PCMP (Predictive Canonical Monotonic Permutation). It did all three: sort, compress, and perfectly unsort.</p>
+            <p>But when I started stress-testing it against chaotic, real-world data, I hit the edges of IEEE-754 floating-point math. I discovered that NaNs and signed zeros behave inconsistently across different hardware architectures. A file that worked on my local machine produced a different cryptographic hash on a remote server. If the math couldn&rsquo;t be trusted to produce the exact same bits everywhere, the &ldquo;perfect reconstruction&rdquo; guarantee was useless.</p>
+            <p>So I designed a strict version: SPCMP.</p>
+            <p>I forced the edge cases into fixed canonical states. All NaN payloads collapsed into a single quiet NaN. Negative zero collapsed into positive zero. Suddenly, the chaos was gone.</p>
+            <p>I didn&rsquo;t just have a fast sorting algorithm anymore. I had a float32 container that was cryptographically verifiable across any hardware. It was no longer just about speed. It was about absolute, mathematical truth.</p>
+          </div>
+
+          <aside class="story__term terminal glass" aria-label="Illustrative unsort command">
+            <div class="terminal-bar"><span class="terminal-title">pcmp &middot; illustrative, not a recorded run</span></div>
+            <div class="terminal-body" data-type><div><span class="term-dim">$ </span>pcmp sort --compress input.f32 -o input.pcmp</div><div class="term-dim">  sorted + compressed, permutation kept</div><div><span class="term-dim">$ </span>pcmp unsort input.pcmp -o restored.f32</div><div><span class="term-dim">$ </span>cmp input.f32 restored.f32</div><div class="term-ok">  byte-identical: the exact original sequence</div><div>&nbsp;</div><div class="term-warn"># SPCMP canonical states</div><div>  NaN (any payload)  -&gt; one quiet NaN</div><div>  -0.0               -&gt; +0.0</div></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="t-node t-node--story reveal-text" id="cloud">
+        <span class="t-date">Mar 2026 &ndash; early Apr 2026</span>
+        <h3>The Zero-Trust Cloud</h3>
+        <div class="story">
+          <div class="story__text" data-type>
+            <p>I didn&rsquo;t just want a place to store files. I wanted to build a system where the server itself couldn&rsquo;t lie to you.</p>
+            <p>I built Samayuktam Cloud as a completely tamper-evident archival platform. Every file uploaded was chunked, hashed, and bound to a Merkle tree. If even a single byte of the file was altered on the server, the Merkle root would break, and the verification would fail.</p>
+            <p>But the real breakthrough was the cryptographic deduplication. If User A uploaded a file, and User B tried to upload the exact same file under a different name, the system caught it immediately. The hashes matched. The file was stored once, and the Merkle proofs guaranteed it was identical.</p>
+            <p>The platform ran live on Hugging Face Spaces until a change in their Docker hosting policies forced the servers offline. The code, the specs, and the cryptographic verifiers still exist in the repository, waiting for the right infrastructure to be redeployed.</p>
+            <p class="story__close">Even the admin couldn&rsquo;t alter a file without breaking the proof. The math was the ultimate authority.</p>
+          </div>
+
+          <aside class="story__term merkle glass" aria-label="Illustrative Merkle tree: one altered chunk breaks the root">
+            <div class="terminal-bar"><span class="terminal-title">merkle tree &middot; illustrative</span></div>
+            <svg viewBox="0 0 320 250" role="img" aria-hidden="true">
+              <g class="m-edges">
+                <path class="m-e m-e-mid" d="M160 52 L80 112"/><path class="m-e m-e-mid" d="M160 52 L240 112"/>
+                <path class="m-e m-e-leaf" d="M80 136 L40 196"/><path class="m-e m-e-leaf" d="M80 136 L120 196"/>
+                <path class="m-e m-e-leaf" d="M240 136 L200 196"/><path class="m-e m-e-leaf" d="M240 136 L280 196"/>
+              </g>
+              <g class="m-node m-root"><rect x="120" y="14" width="80" height="38" rx="2"/><text x="160" y="38">ROOT</text></g>
+              <g class="m-node m-mid"><rect x="44" y="98" width="72" height="38" rx="2"/><text x="80" y="122">H01</text></g>
+              <g class="m-node m-mid m-mid-r"><rect x="204" y="98" width="72" height="38" rx="2"/><text x="240" y="122">H23</text></g>
+              <g class="m-node m-leaf"><rect x="12" y="196" width="56" height="34" rx="2"/><text x="40" y="218">C0</text></g>
+              <g class="m-node m-leaf"><rect x="92" y="196" width="56" height="34" rx="2"/><text x="120" y="218">C1</text></g>
+              <g class="m-node m-leaf"><rect x="172" y="196" width="56" height="34" rx="2"/><text x="200" y="218">C2</text></g>
+              <g class="m-node m-leaf m-leaf-last"><rect x="252" y="196" width="56" height="34" rx="2"/><text x="280" y="218">C3</text></g>
+            </svg>
+            <p class="m-cap"><span class="m-cap-a">chunks hashed, bound upward</span><span class="m-cap-b">one byte changes: the root breaks</span></p>
+          </aside>
+        </div>
+      </div>
+
+      <div class="reel-bleed" data-reel>
+        <div class="reel" role="group" aria-label="Zero-Trust Cloud captures">
+          <div class="reel__viewport">
+            <div class="reel__track">
+              <figure class="frame"><div class="frame__img"><img src="assets/images/Samayuktam_Cloud/login.png" alt="Login" decoding="async"></div><figcaption class="frame__cap"><b>01</b>Login</figcaption></figure>
+              <figure class="frame"><div class="frame__img"><img src="assets/images/Samayuktam_Cloud/main_interface_for_owner_or_admin.png" alt="Admin interface" decoding="async"></div><figcaption class="frame__cap"><b>02</b>Admin interface</figcaption></figure>
+              <figure class="frame"><div class="frame__img"><img src="assets/images/Samayuktam_Cloud/what_you_share.png" alt="What you share" decoding="async"></div><figcaption class="frame__cap"><b>03</b>What you share</figcaption></figure>
+              <figure class="frame"><div class="frame__img"><img src="assets/images/Samayuktam_Cloud/viewing_display.png" alt="Viewing display" decoding="async"></div><figcaption class="frame__cap"><b>04</b>Viewing display</figcaption></figure>
+              <figure class="frame"><div class="frame__img"><img src="assets/images/Samayuktam_Cloud/security_and_traces_of_your_file.png" alt="File security and trace log" decoding="async"></div><figcaption class="frame__cap"><b>05</b>File security and trace log</figcaption></figure>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-node t-node--story reveal-text" id="search">
+        <span class="t-date">Feb &ndash; Mar 2026</span>
+        <h3>Deterministic Search</h3>
+        <div class="story">
+          <div class="story__text" data-type>
+            <p>Traditional AI search is probabilistic. You ask a question, and the system uses Approximate Nearest Neighbor (ANN) algorithms to find the &ldquo;closest&rdquo; match. Run the same query twice, and the order of the results might shuffle slightly because the floating-point math underneath shifted. In enterprise systems, &ldquo;approximate&rdquo; is not good enough.</p>
+            <p>I built a Deterministic Semantic Search Engine to prove that AI could be auditable.</p>
+            <p>It used text embeddings to understand the meaning of a query, but the retrieval was entirely deterministic. It relied on strict canonical float ordering, cache-stable binary search windows, and cryptographic hashing to guarantee that the same query against the same index would return the exact same results, every single time.</p>
+            <p>I ran a replay harness of 30,000 unique queries across independent process invocations. Zero result-hash mismatches.</p>
+            <p class="story__close">I didn&rsquo;t just build a search engine. I built a system that could hand you a cryptographic Merkle proof alongside the search results, proving mathematically that the output you received was the exact same computation the system performed.</p>
+          </div>
+
+          <aside class="story__term diptych" aria-label="Search and zero-divergence evidence">
+            <div class="proof-badge glass">
+              <span class="proof-badge__n serif">0</span>
+              <span class="proof-badge__t"><b>result-hash mismatches</b><br>30,000 unique queries, independent process invocations</span>
+            </div>
+            <figure class="print glass reveal-image">
+              <img src="assets/images/Samayuktam_System_or_FADS/search_look.png" alt="Search for &ldquo;genetic algorithms&rdquo; with result hashes" decoding="async">
+              <figcaption class="print__cap"><b>A</b>Query &ldquo;genetic algorithms&rdquo;, result hashes alongside</figcaption>
+            </figure>
+            <figure class="print glass reveal-image">
+              <img src="assets/images/Samayuktam_System_or_FADS/comparison_between_local_and_hf_page_showing_zero_divergence.png" alt="Local versus hosted output with zero divergence" decoding="async">
+              <figcaption class="print__cap"><b>B</b>Local vs hosted: zero divergence</figcaption>
+            </figure>
+          </aside>
+        </div>
+
+        <div class="prints">
+          <figure class="print glass reveal-image">
+            <img src="assets/images/Samayuktam_System_or_FADS/page_look.png" alt="FADS page" decoding="async">
+            <figcaption class="print__cap"><b>C</b>The search page</figcaption>
+          </figure>
+          <figure class="print glass reveal-image">
+            <img src="assets/images/Samayuktam_System_or_FADS/citing_sources_of_search.png" alt="Citing sources of a search" decoding="async">
+            <figcaption class="print__cap"><b>D</b>Citing sources of a search</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="t-node t-node--story reveal-text" id="cagm">
+        <span class="t-date">Apr &ndash; May 2026</span>
+        <h3>CAGM</h3>
+        <div class="story">
+          <div class="story__text" data-type>
+            <p>Building the search engine taught me a hard truth about modern AI: if the underlying floating-point math drifts across hardware, the AI is fundamentally unauditable.</p>
+            <p>I realized the same problem that plagued search was quietly destroying machine learning. When you train a model, the exact order of floating-point operations depends on the hardware it runs on. Train the same model on an NVIDIA GPU and an AMD CPU, and you get slightly different weights.</p>
+            <p>For a recommendation algorithm, a tiny drift doesn&rsquo;t matter. But for medical diagnostics, flight simulation, or safety-critical systems, it is a disaster. If the model trained in the cloud says 94% and the model on the physical hardware says 91%, which one do you trust? How do you prove they are the same model?</p>
+            <p>I built CAGM to solve this.</p>
+            <p>CAGM is a fixed-point integer ML classifier. There is no floating-point math anywhere in the training loop. The weights, the gradients, the activations, and the optimizer are all strictly integer-based.</p>
+            <p>Because of this, CAGM doesn&rsquo;t just train a model. It emits a 64-character SHA-256 proof of the entire training trajectory. Every epoch, every gradient update is cryptographically bound into a Merkle tree.</p>
+            <p>If you train the exact same dataset on different hardware, the output is bit-identical. The 64-character proof string will match perfectly on an Intel CPU, an AMD CPU, an NVIDIA GPU, and a Google TPU.</p>
+            <p class="story__close">CAGM makes machine learning not only deterministic but cryptographically auditable. It proves exactly how a model was trained, without ever exposing the underlying data or the model weights.</p>
+          </div>
+
+          <aside class="story__term diptych" aria-label="CAGM cross-device proof evidence">
+            <div class="proof-badge glass">
+              <span class="proof-badge__n serif">4</span>
+              <span class="proof-badge__t"><b>machines, one proof hash</b><br>Intel CPU, AMD CPU, NVIDIA GPU, Google TPU: bit-identical</span>
+            </div>
+            <div class="terminal glass">
+              <div class="terminal-bar"><span class="terminal-title">proof hash &middot; from the benchmark report, truncated</span></div>
+              <div class="terminal-body" data-type><div class="term-dim"># HAM10000_metadata &middot; cagm_cpu</div><div>  Colab_CPU           ee069f064636c442&hellip;</div><div>  Colab_T4_GPU        ee069f064636c442&hellip;</div><div>  Colab_TPU_v5e       ee069f064636c442&hellip;</div><div>  Prime_RTX3050_WSL2  ee069f064636c442&hellip;</div><div>&nbsp;</div><div class="term-ok">  ALL PROOFS IDENTICAL</div></div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="prints prints--single">
+          <figure class="print glass reveal-image">
+            <img src="assets/images/CAGM/cagm_cross_device_benchmark.png" alt="CAGM Cross-Device Benchmark Report: accuracy and proof hashes identical across four machines" decoding="async" data-zoom>
+            <figcaption class="print__cap"><b>A</b>Cross-device benchmark: all proofs identical &middot; click to inspect</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="t-node reveal-text" id="vendors" style="padding-bottom:0;">
+        <span class="t-date">mid Aug 2026 &ndash; early Sep 2026</span>
+        <h3>The Vendor Trail</h3>
+        <div class="casefile">
+          <div class="casefile__intro">
+            <p>I stopped trying to pitch individuals and went straight to the source. I filed the cross-hardware float32 divergence finding directly with the security and engineering divisions of the world&rsquo;s largest hardware vendors.</p>
+            <p>The responses were consistent, and they form the foundation of this entire project.</p>
+          </div>
+
+          <div class="vledger glass" role="table" aria-label="Vendor responses">
+            <div class="vledger__head" role="row"><span role="columnheader">Vendor / Channel</span><span role="columnheader">Response</span></div>
+            <div class="vledger__row" role="row">
+              <span class="vledger__who" role="cell"><b>NVIDIA</b><i>Bug Triage</i></span>
+              <p class="vledger__txt" role="cell">Reviewed the CUDA reproducer and confirmed that the divergence across execution paths is expected behavior at the hardware/library layer, not an NVIDIA SDK defect.</p>
+            </div>
+            <div class="vledger__row" role="row">
+              <span class="vledger__who" role="cell"><b>Microsoft</b><i>MSRC</i></span>
+              <p class="vledger__txt" role="cell">Accepted the report for the Azure environment, but classified it as a non-security defect.</p>
+            </div>
+            <div class="vledger__row" role="row">
+              <span class="vledger__who" role="cell"><b>AMD</b><i>PSIRT</i></span>
+              <p class="vledger__txt" role="cell">Acknowledged the finding but declined to pursue it, citing a lack of demonstrated security impact at the silicon level.</p>
+            </div>
+            <div class="vledger__row" role="row">
+              <span class="vledger__who" role="cell"><b>Intel</b><i>PSIRT</i></span>
+              <p class="vledger__txt" role="cell">Routed the finding to their bug bounty intake, confirming it fell outside standard vulnerability triage.</p>
+            </div>
+          </div>
+
+          <div class="casefile__worth">
+            <h4 class="casefile__label">What this evidence is worth</h4>
+            <p>These responses are not a rejection of the math. They are an admission of a gap. Every single vendor confirmed the divergence is real, but because it spans across different operating systems, math libraries (glibc), and silicon architectures, it belongs to no single vendor. Nobody owns the problem.</p>
+            <p>That silence is the opening. When the entire hardware industry agrees a foundational problem exists but refuses to fix it, the only remaining solution is a vendor-neutral canonicalization layer.</p>
+            <p class="story__close">That is what Samayuktam provides.</p>
+          </div>
+
+          <div class="casefile__cta">
+            <a class="cta cta--main" href="specs.html">See how the canonicalization layer works <span aria-hidden="true">&rarr;</span> Read the Specs</a>
+            <a class="cta" href="pilot.html">Request the Pilot <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>&copy; 2026 Samayuktam. Solo-built.</span>
+  <div>
+    <a href="https://github.com/SwapnopamMitra" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:swapnopam@samayuktam.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>
