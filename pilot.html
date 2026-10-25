@@ -7,21 +7,23 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/film.css">
 <link rel="stylesheet" href="css/festive.css">
+<link rel="stylesheet" href="css/divergence.css">
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="js/terminal.js" defer></script>
 <script src="js/main.js" defer></script>
 <script src="js/film.js" defer></script>
+<script src="js/divergence.js" defer></script>
 </head>
 <body>
 <div class="grain"></div>
 <div class="cursor-dot"></div>
 
 <nav class="site-nav">
-  <div class="brand"><img src="assets/images/page_logo.png" alt="Samayuktam logo"><span class="serif" style="font-weight:600;">Samayuktam</span></div>
+  <a class="brand" href="index.html" aria-label="Samayuktam - back to home page" title="Back to home"><img src="assets/images/page_logo.png" alt="Samayuktam logo"><span class="serif" style="font-weight:600;">Samayuktam</span></a>
   <div class="links">
-    <a href="index.html">The Problem</a>
+    <a href="index.html#proof">The Problem</a>
     <a href="journey.html">Journey</a>
     <a href="specs.html">Specs</a>
     <a href="pilot.html" class="active">Pilot</a>
@@ -37,7 +39,42 @@
     <p class="pilot-hook reveal-text">Your float32 data compresses. Ours also gives you a Merkle root. Same size reduction, plus tamper-evidence. Four commands to verify.</p>
   </section>
 
-  <section id="what-you-get" style="padding-top:0;border-top:none;">
+  <section id="pre-read" style="padding-top:0;border-top:none;">
+    <div class="section-head reveal-text">
+      <h2>Before You Read the Terms</h2>
+      <p>Your security team will review this program. Their review is better spent on evidence than on our pitch. Start with the divergence results.</p>
+    </div>
+    <div class="gate glass reveal-image">
+      <div class="gate__card gate__card--yes">
+        <div class="gate__tag">Already reviewed</div>
+        <h3 class="serif">Have you gone through the divergence results?</h3>
+        <p>Then we want your read before any paperwork. Objections, reproductions that disagree with ours, and a fourth result are all useful. Send them to us directly.</p>
+        <ul>
+          <li>Environments you ran, with CPU and Python versions</li>
+          <li>The hex view from each</li>
+          <li>What your team challenged or could not reproduce</li>
+        </ul>
+        <a class="btn btn-solid" href="mailto:swapnopam@samayuktam.com?subject=Divergence%20Results%20%E2%80%94%20Security%20Review%20Notes&amp;body=Organisation%3A%0ARole%3A%0A%0AEnvironments%20run%20(CPU%20model%20%2F%20Python%20version)%3A%0A%0AHex%20view%20per%20environment%3A%0A%0AObservations%20%2F%20objections%3A%0A%0AQuestions%20before%20we%20proceed%3A%0A">Email Your Thoughts</a>
+      </div>
+      <div class="gate__card gate__card--no">
+        <div class="gate__tag">Not yet</div>
+        <h3 class="serif">Run it first. It takes a minute.</h3>
+        <p>One Python file, run on any machine your team already has. Compare the hex view against the record. If your result matches nothing we have published, that is the more interesting outcome.</p>
+        <ul>
+          <li>Run it on two or more different machines</li>
+          <li>Compare the hex view against the record</li>
+          <li>Come back and tell us what you saw</li>
+        </ul>
+        <div class="repro-cta" style="margin-top:0;">
+          <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Script</a>
+          <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download</a>
+        </div>
+      </div>
+    </div>
+    <p class="gate__note reveal-text">Forward this page to whoever signs off on security. The terms below (hardware binding, online verification, pricing) are written for them to read after the results, not before.</p>
+  </section>
+
+  <section id="what-you-get">
     <div class="section-head reveal-text">
       <h2>1. What You Get</h2>
     </div>

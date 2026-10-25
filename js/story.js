@@ -56,7 +56,7 @@
           merkle.classList.toggle("s-leaf", p > 0.12);
           merkle.classList.toggle("s-mid", p > 0.24);
           merkle.classList.toggle("s-root", p > 0.34);
-          merkle.classList.toggle("s-broken", p > 0.5 && p < 0.82);   // tamper moment, then it settles
+          merkle.classList.toggle("s-broken", p > 0.5 && p < 0.82);   
         }
       }
     });

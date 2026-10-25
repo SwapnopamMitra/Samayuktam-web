@@ -7,22 +7,25 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/film.css">
 <link rel="stylesheet" href="css/festive.css">
+<link rel="stylesheet" href="css/divergence.css">
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="js/terminal.js" defer></script>
 <script src="js/main.js" defer></script>
 <script src="js/film.js" defer></script>
+<script src="js/lightbox.js" defer></script>
+<script src="js/divergence.js" defer></script>
 </head>
 <body>
 <div class="grain"></div>
 <div class="cursor-dot"></div>
 
 <nav class="site-nav">
-  <div class="brand">
+  <a class="brand" href="index.html" aria-label="Samayuktam - back to home page" title="Back to home">
     <img src="assets/images/page_logo.png" alt="Samayuktam logo">
     <span class="serif" style="font-weight:600;">Samayuktam</span>
-  </div>
+  </a>
   <div class="links">
     <a href="index.html#proof">The Problem</a>
     <a href="journey.html">Journey</a>
@@ -37,8 +40,16 @@
       <h1><span class="word">Deterministic</span> <span class="word">compute</span> <span class="word">for</span> <span class="word">heterogeneous</span> <span class="word">hardware.</span></h1>
       <p class="lede">Your float32 data compresses. SPCMP also gives you a Merkle root. Same size reduction, plus tamper-evidence.</p>
       <div class="cta-row">
-        <a href="specs.html" class="btn btn-solid">Read the Specs</a>
-        <a href="pilot.html" class="btn">Request Pilot</a>
+        <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Divergence Script</a>
+        <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download the script</a>
+      </div>
+      <div class="cmd-chip mono" aria-label="Command to run the script">
+        <span class="prompt">$</span><code>python3 prove_divergence.py</code>
+        <button type="button" data-copy="python3 prove_divergence.py">Copy</button>
+      </div>
+      <div class="hero-sub">
+        <a href="specs.html">Read the Specs &rarr;</a>
+        <a href="pilot.html">Request Pilot &rarr;</a>
       </div>
     </div>
     <div class="portrait">
@@ -53,18 +64,21 @@
     </div>
 
     <figure class="figure glass reveal-image" style="max-width:480px;">
-      <img src="assets/images/Comp_graphic/comparison.png" alt="Cross-hardware hash verification table" class="proof-image">
-      <figcaption>Pictorial representation -- see the record below for the actual run data.</figcaption>
+      <img src="assets/images/Comp_graphic/comparison.png" alt="Cross-hardware hash verification table" class="proof-image" loading="lazy" decoding="async" data-zoom>
+      <figcaption>Pictorial representation -- see the record below for the actual run data. Click to inspect.</figcaption>
     </figure>
 
     <div class="reveal-text" style="margin-top:36px;">
       <h3 class="serif" style="font-size:18px; margin-bottom:6px;">The Record</h3>
       <p style="color:var(--text-dim); font-size:14px; max-width:60ch; margin-bottom:18px;">
-        Independent harness, same binary, same input, run across real hardware. Two separate findings, each reproducible from
-        <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" style="color:var(--gold);">the divergence-verifier repo</a>.
+        Independent harness, same binary, same input, run across real hardware. Three separate findings. The first two are reproducible from
+        <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" style="color:var(--gold);">the divergence-verifier repo</a>;
+        the third you can run yourself in under a minute from
+        <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" style="color:var(--gold);">the float-divergence-script repo</a>.
       </p>
 
       <div class="doc-subhead mono" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">CPU FINDING -- hardware-dependent divergence</div>
+      <div class="ledger-wrap">
       <table class="ledger" style="margin-bottom:28px;">
         <tr><th>Node</th><th>CPU</th><th>Output hash</th></tr>
         <tr><td>Prime</td><td>Intel i5-12450HX</td><td class="mono">b266807160a9ee69…</td></tr>
@@ -74,6 +88,7 @@
         <tr><td>project40c8…</td><td>AMD EPYC 7B13</td><td class="mono">a1b49047410b2620…</td></tr>
         <tr><td>second_pc</td><td>Intel i7-1255U</td><td class="mono">689c2e49eb09ec8b…</td></tr>
       </table>
+      </div>
       <p style="color:var(--text-faint); font-size:13px; margin-top:-16px; margin-bottom:28px;">Binary hash and input hash identical across all six nodes. Six different output hashes.</p>
 
       <div class="doc-subhead mono" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">GPU FINDING -- path-dependent divergence</div>
@@ -86,7 +101,71 @@
         <tr><td>red_tree</td><td class="mono">a2c70538…</td><td class="mono">a2c70538…</td></tr>
         <tr><td>red_atomic</td><td class="mono">a2c70538…</td><td class="mono">a2c70538…</td></tr>
       </table>
-      <p style="color:var(--text-faint); font-size:13px; margin-top:12px;">Same kernel across both architectures: identical output. Different kernels on the same GPU: different output. The divergence source is the execution path, not the hardware.</p>
+      <p style="color:var(--text-faint); font-size:13px; margin-top:12px; margin-bottom:28px;">Same kernel across both architectures: identical output. Different kernels on the same GPU: different output. The divergence source is the execution path, not the hardware.</p>
+
+      <div class="doc-subhead mono" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">SCRIPT FINDING -- one Python file, five environments, three answers</div>
+      <div class="ledger-wrap reveal-text">
+      <table class="ledger ledger--stagger" id="div-table">
+        <tr><th>Environment</th><th>CPU</th><th>Python</th><th>Sorted-sum</th><th>Hex view</th><th>Result</th></tr>
+        <tr data-g="B"><td>Prime (WSL2)</td><td>Intel i5-12450HX</td><td class="mono">3.12.3</td><td class="mono">2190.0</td><td class="mono">00e00845</td><td><span class="grp" data-g="B"><i></i>B</span></td></tr>
+        <tr data-g="B"><td>OnlineGDB</td><td>Intel Xeon @ 2.80GHz</td><td class="mono">3.13.7</td><td class="mono">2190.0</td><td class="mono">00e00845</td><td><span class="grp" data-g="B"><i></i>B</span></td></tr>
+        <tr data-g="A"><td>Colab CPU</td><td>Intel Xeon @ 2.00GHz</td><td class="mono">3.13.16</td><td class="mono">2190.9140625</td><td class="mono">a0ee0845</td><td><span class="grp" data-g="A"><i></i>A</span></td></tr>
+        <tr data-g="C"><td>Colab CPU</td><td>Intel Xeon @ 2.20GHz</td><td class="mono">3.13.16</td><td class="mono">2191.25390625</td><td class="mono">10f40845</td><td><span class="grp" data-g="C"><i></i>C</span></td></tr>
+        <tr data-g="C"><td>Colab CPU</td><td>AMD EPYC 7B12</td><td class="mono">3.13.16</td><td class="mono">2191.25390625</td><td class="mono">10f40845</td><td><span class="grp" data-g="C"><i></i>C</span></td></tr>
+      </table>
+      </div>
+      <p style="color:var(--text-faint); font-size:13px; margin-top:12px;">Same script, five environments, three different sums. An Intel Xeon and an AMD EPYC agree with each other. Two Intel Xeons do not. The CPU label does not tell you which answer you will get.</p>
+
+      <div class="spread glass reveal-image" aria-label="The three sorted-sum results plotted on one line, 2190.0 to 2191.25390625">
+        <div class="spread__cap"><span><b>Spread</b> &middot; one sum, three landing points</span><span>&Delta; 1.25390625 between lowest and highest</span></div>
+        <div class="spread__line">
+          <div class="spread__pt up edge-l" data-g="B" style="--pos:0%; --d:0;"><span><b>B &middot; 2190.0</b>Prime &middot; OnlineGDB</span></div>
+          <div class="spread__pt dn" data-g="A" style="--pos:72.9%; --d:250;"><span><b>A &middot; 2190.9140625</b>Colab Xeon 2.00</span></div>
+          <div class="spread__pt up edge-r" data-g="C" style="--pos:100%; --d:500;"><span><b>C &middot; 2191.25390625</b>Colab Xeon 2.20 &middot; EPYC</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reproduce">
+    <div class="section-head reveal-text">
+      <h2>Run it yourself</h2>
+      <p>One Python file. Run it on whatever hardware you can get your hands on, then compare your hex against the record. Do not take the table above on trust.</p>
+    </div>
+
+    <div class="repro">
+      <div class="terminal glass reveal-image" id="div-term">
+        <div class="terminal-bar"><span class="terminal-title" id="div-term-title">prove_divergence.py</span></div>
+        <div class="env-tabs" id="env-tabs" role="tablist" aria-label="Recorded environments"></div>
+        <pre class="terminal-body" id="div-term-body" aria-live="polite"></pre>
+      </div>
+
+      <div class="reveal-text">
+        <div class="groups">
+          <div class="group-card" data-g="A"><div class="group-card__top"><span>Result A</span><code>a0ee0845</code></div><p>Colab Xeon @ 2.00GHz. Sum 2190.9140625. Seen once.</p></div>
+          <div class="group-card" data-g="B"><div class="group-card__top"><span>Result B</span><code>00e00845</code></div><p>i5-12450HX under WSL2, and OnlineGDB&rsquo;s Xeon @ 2.80GHz. Sum 2190.0.</p></div>
+          <div class="group-card" data-g="C"><div class="group-card__top"><span>Result C</span><code>10f40845</code></div><p>Colab Xeon @ 2.20GHz and AMD EPYC 7B12. Sum 2191.25390625.</p></div>
+        </div>
+
+        <form class="checker glass" id="div-check" autocomplete="off" novalidate>
+          <label for="hex-in">Paste your hex view</label>
+          <div class="checker__row">
+            <input id="hex-in" type="text" inputmode="text" maxlength="12" placeholder="e.g. 00e00845" spellcheck="false">
+            <button type="submit">Check</button>
+          </div>
+          <div class="checker__out" aria-live="polite">Matches one of the three recorded results, or it is a fourth. A fourth is data we want.</div>
+        </form>
+      </div>
+    </div>
+
+    <p class="verdict reveal-text">
+      <b>Read the table the hard way.</b> Result B appears on an Intel laptop part and on a hosted Xeon. Result C appears on an Intel Xeon and an AMD EPYC.
+      Result A is an Intel Xeon that agrees with neither. Vendor does not predict the outcome. <em>One script cannot be assumed to give one answer across your fleet.</em>
+    </p>
+
+    <div class="repro-cta reveal-text">
+      <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Open the repo</a>
+      <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download prove_divergence.py</a>
     </div>
   </section>
 

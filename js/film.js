@@ -21,7 +21,6 @@
     const setPtr = (x, y) => { ptr.x = x; ptr.y = y; };
     window.addEventListener("pointermove", (e) => { setPtr(e.clientX, e.clientY); ambient.classList.add("on"); }, { passive: true });
     document.addEventListener("pointerleave", () => setPtr(vw / 2, vh / 2));
-    // phones: tilt the phone to look around (Android allows this without a prompt)
     if (!fine && window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== "function") {
       window.addEventListener("deviceorientation", (e) => {
         if (e.gamma == null) return;
@@ -33,7 +32,7 @@
     ambient.className = "film-ambient";
     document.body.prepend(ambient);
 
-    let vel = 0, sv = 0;
+    let vel = 0, sv = 0, idleTicks = 0;
     ScrollTrigger.create({ start: 0, end: "max", onUpdate: (self) => { vel = self.getVelocity(); } });
 
     const timeline = document.querySelector(".timeline");
@@ -88,12 +87,10 @@
       const cells = [...track.querySelectorAll(".frame")];
       if (!reel || !track || !cells.length) return;
 
-      // which node is this reel illustrating? (the node right before it)
       let prev = bleed.previousElementSibling;
       while (prev && !prev.classList.contains("t-node")) prev = prev.previousElementSibling;
       const nodeIdx = prev ? [...prev.parentNode.querySelectorAll(".t-node")].indexOf(prev) + 1 : 0;
 
-      // layers
       const ghostWrap = document.createElement("div");
       ghostWrap.className = "reel__ghosts"; ghostWrap.setAttribute("aria-hidden", "true");
       const ghosts = cells.slice(0, 4).map((c) => {
@@ -153,10 +150,10 @@
         R.u = R.frames.map((f, i) => (i === 0 ? 0 : 0));
         for (let i = 1; i < R.frames.length; i++) R.u[i] = R.u[i - 1] + R.frames[i - 1].w / 2 + gap + R.frames[i].w / 2;
         const last = R.frames[R.frames.length - 1], first = R.frames[0];
-        R.Lp = R.u[R.u.length - 1] + last.w / 2 + gap + first.w / 2;      // one full lap
+        R.Lp = R.u[R.u.length - 1] + last.w / 2 + gap + first.w / 2;      
         R.span = R.u[R.u.length - 1];
         const maxW = Math.max(...R.frames.map((f) => f.w));
-        R.loop = R.frames.length > 2 && R.Lp / 2 > vw / 2 + maxW / 2 + 120;  // wrap only if the seam stays off-screen
+        R.loop = R.frames.length > 2 && R.Lp / 2 > vw / 2 + maxW / 2 + 120;  
         R.dist = R.loop ? R.Lp : R.span;
         R.rh = R.reel.offsetHeight;
         R.gs = Math.max(vw * 0.5, (R.dist * 0.42 + vw * 0.6) / R.ghosts.length);
@@ -207,7 +204,6 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (armed) ScrollTrigger.refresh(); });
 
     function tick() {
-      // smooth pointer
       ptr.sx = lerp(ptr.sx, ptr.x, 0.09);
       ptr.sy = lerp(ptr.sy, ptr.y, 0.09);
       ptr.nx = (ptr.sx - vw / 2) / (vw / 2);
@@ -218,6 +214,9 @@
       vel *= 0.88;
       sv = lerp(sv, vel, 0.14);
 
+      const moving = Math.abs(ptr.x - ptr.sx) + Math.abs(ptr.y - ptr.sy) > 0.4 || Math.abs(vel) > 0.5;
+      if (moving) idleTicks = 0;
+      if (moving || ++idleTicks < 40) {
       gsap.set(ambient, { x: ptr.sx, y: ptr.sy });
 
       drifters.forEach((d) => {
@@ -233,6 +232,8 @@
         t.rx = lerp(t.rx, -dy * 7, 0.12);
         gsap.set(t.el, { transformPerspective: 1100, rotationY: t.ry, rotationX: t.rx });
       });
+
+      }
 
       reels.forEach(tickReel);
     }
@@ -319,7 +320,7 @@
       const up = () => { if (!down) return; down = null; R.reel.classList.remove("is-drag"); snap(R, 0); };
       window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
       R.reel.addEventListener("wheel", (e) => {
-        if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;           // vertical wheel always scrolls the page
+        if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;           
         R.man += e.deltaX; clearTimeout(idle); idle = setTimeout(() => snap(R, 0), 180);
       }, { passive: true });
     });

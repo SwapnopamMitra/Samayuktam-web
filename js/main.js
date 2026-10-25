@@ -13,8 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const lenis = new Lenis({ duration: 1.2, smoothWheel: true, autoRaf: true });
+  const lenis = new Lenis({ duration: 1.2, smoothWheel: true, autoRaf: false });
 
+  window.__lenis = lenis;
   gsap.registerPlugin(ScrollTrigger);
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
@@ -48,7 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
 function initCursor() {
   const dot = document.querySelector(".cursor-dot");
   if (!dot || !matchMedia("(hover: hover)").matches) return;
-  window.addEventListener("mousemove", e => { dot.style.left = e.clientX + "px"; dot.style.top = e.clientY + "px"; });
+  let cx = 0, cy = 0, queued = false;
+  window.addEventListener("mousemove", e => {
+    cx = e.clientX; cy = e.clientY;
+    if (queued) return; queued = true;
+    requestAnimationFrame(() => { queued = false; dot.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`; });
+  }, { passive: true });
   document.querySelectorAll("a, button, .figure, .pricing-card").forEach(el => {
     el.addEventListener("mouseenter", () => dot.classList.add("hover"));
     el.addEventListener("mouseleave", () => dot.classList.remove("hover"));
@@ -141,3 +147,16 @@ function initTerminal() {
   }, { threshold: .3 });
   io.observe(body);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const brand = document.querySelector(".site-nav .brand");
+  if (!brand) return;
+  brand.addEventListener("click", (e) => {
+    const onHome = /(^|\/)(index\.html)?$/.test(location.pathname);
+    if (!onHome) return;
+    e.preventDefault();
+    if (location.hash) history.replaceState(null, "", location.pathname);
+    if (window.__lenis) window.__lenis.scrollTo(0, { duration: 1.1 });
+    else window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
