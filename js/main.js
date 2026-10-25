@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!window.gsap || !window.ScrollTrigger || !window.Lenis) {
     forceReveal();
-    console.warn("Samayuktam: GSAP/Lenis failed to load from CDN — motion disabled, content shown as static.");
+    console.warn("Samayuktam: GSAP/Lenis failed to load from CDN -- motion disabled, content shown as static.");
     initCursor();
     initTerminal();
     return;
