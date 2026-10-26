@@ -44,6 +44,9 @@
       <h2>1. The Divergence Baseline</h2>
       <p>Everything else on this page is measured against this one number.</p>
     </div>
+    <aside class="test-note test-note--block reveal-text">
+      <p><b>Before you run the script:</b> Pick two machines that are actually different. An Intel laptop and an AMD cloud VM, or a local WSL2 instance and a Colab instance. If you run it on two identical work laptops, they will likely match, and you will miss the divergence.</p>
+    </aside>
     <div class="spec reveal-text">
       <div class="spec__row"><span class="spec__label">The Test</span><p><code>prove_divergence.py</code> prints the host CPU model and Python version, runs a sorting-then-summing experiment, and reports the sorted-sum with its hex view.</p></div>
       <div class="spec__row"><span class="spec__label">The Result</span><p>Five environments produced three different sums, spread across 1.25390625. An Intel Xeon and an AMD EPYC agree; two Intel Xeons disagree. The vendor on the chip does not predict the answer.</p></div>
