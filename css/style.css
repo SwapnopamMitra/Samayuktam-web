@@ -58,7 +58,6 @@ main, header, footer { position: relative; z-index: 1; }
   100% { opacity: 0; background-position: -20% 120%; }
 }
 .glass:hover::before { animation: glass-sheen .9s ease 1 both; }
-/* No sheen or hover tint while the page is moving: nothing can be left half-lit when scrolling stops. */
 .is-scrolling .glass::before { animation: none !important; opacity: 0; }
 .is-scrolling .gate__card:hover { background: transparent; }
 @media (prefers-reduced-motion: reduce) { .glass:hover::before { animation: none; } }
