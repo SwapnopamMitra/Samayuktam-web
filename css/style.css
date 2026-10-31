@@ -50,9 +50,18 @@ main, header, footer { position: relative; z-index: 1; }
   content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
   background: linear-gradient(115deg, transparent 30%, rgba(245,245,240,.1) 48%, rgba(197,160,89,.14) 52%, transparent 70%);
   background-size: 220% 220%; background-position: 120% -20%;
-  transition: opacity .4s ease, background-position .9s ease;
 }
-.glass:hover::before { opacity: 1; background-position: -20% 120%; }
+@keyframes glass-sheen {
+  0%   { opacity: 0; background-position: 120% -20%; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; background-position: -20% 120%; }
+}
+.glass:hover::before { animation: glass-sheen .9s ease 1 both; }
+/* No sheen or hover tint while the page is moving: nothing can be left half-lit when scrolling stops. */
+.is-scrolling .glass::before { animation: none !important; opacity: 0; }
+.is-scrolling .gate__card:hover { background: transparent; }
+@media (prefers-reduced-motion: reduce) { .glass:hover::before { animation: none; } }
 
 .site-nav {
   position: sticky; top: 0; z-index: 40;
@@ -160,4 +169,10 @@ footer a { color: var(--text-dim); text-decoration: none; margin-left: 18px; }
   .pricing-card { border-right: none; border-bottom: 1px solid var(--line); }
   .site-nav .links { gap: 16px; }
   section { padding: 48px 20px; }
+}
+
+@media (max-width: 900px) {
+  .site-nav { flex-wrap: wrap; row-gap: 8px; }
+  .site-nav .links { flex-wrap: wrap; gap: 6px 14px; width: 100%; }
+  .site-nav a { font-size: 13px; }
 }

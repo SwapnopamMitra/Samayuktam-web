@@ -172,12 +172,12 @@
       if (hit) {
         const [g, v] = hit;
         const who = ENVS.filter((x) => x.g === g).map((x) => x.label).join(", ");
-        show(`<span class="ok">Match &middot; Result ${g}</span> &mdash; sum <b>${v.sum}</b>. Same as: ${who}.`);
+        show(`<span class="ok">Match &middot; Result ${g}</span>: sum <b>${v.sum}</b>. Same as: ${who}.`);
         setGroup(g);
       } else {
         const body = encodeURIComponent(
           "Hex view: " + raw + "\nSum: \nCPU model: \nPython version: \nNumPy version: \nOS / environment: \n");
-        show(`<span class="new">No match &mdash; a fourth result.</span> That is new data. ` +
+        show(`<span class="new">No match: a fourth result.</span> That is new data. ` +
           `<a href="mailto:swapnopam@samayuktam.com?subject=Divergence%20result%20${raw}&body=${body}">Email it with your CPU model and Python/NumPy versions</a>.`);
         setGroup(null);
       }

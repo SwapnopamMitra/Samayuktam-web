@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPCMP -- Samayuktam</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/film.css">
+<link rel="stylesheet" href="css/festive.css">
+<link rel="stylesheet" href="css/divergence.css">
+<link rel="stylesheet" href="css/pages.css">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/terminal.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/film.js" defer></script>
+<script src="js/lightbox.js" defer></script>
+<script src="js/divergence.js" defer></script>
+<script src="js/speeddata.js" defer></script>
+<script src="js/bench.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+
+<nav class="site-nav">
+  <a class="brand" href="index.html" aria-label="Samayuktam - back to home page" title="Back to home">
+    <img src="assets/images/page_logo.png" alt="Samayuktam logo">
+    <span class="serif" style="font-weight:600;">Samayuktam</span>
+  </a>
+  <div class="links">
+    <a href="index.html#proof">The Problem</a>
+    <a href="journey.html">Journey</a>
+    <a href="specs.html">Specs</a>
+    <a href="spcmp.html" class="active">SPCMP</a>
+    <a href="integrity.html">Integrity</a>
+    <a href="divergence.html">Divergence</a>
+    <a href="model-drift.html">Model Drift</a>
+    <a href="pilot.html">Pilot</a>
+  </div>
+</nav>
+
+<main>
+  <section class="page-hero">
+    <div class="section-head reveal-text">
+      <h1>SPCMP</h1>
+      <p>Your float32 data compresses. SPCMP also gives you a Merkle root. Same size reduction, plus tamper-evidence.</p>
+    </div>
+    <div class="cta-row">
+      <a href="mailto:swapnopam@samayuktam.com?subject=SPCMP%20Pilot%20Request" class="btn btn-solid">Request SPCMP</a>
+      <a href="pilot.html#tiers" class="btn">Pilot tiers &rarr;</a>
+      <a href="integrity.html" class="btn">Three layers of integrity &rarr;</a>
+      <a href="#scale" class="btn">Watch it scale &darr;</a>
+      <a href="#simulation" class="btn">Speed simulation &darr;</a>
+      <a href="divergence.html" class="btn">Divergence record &rarr;</a>
+    </div>
+  </section>
+
+  <section id="spcmp">
+    <div class="section-head reveal-text">
+      <h2>Float32 Container &amp; Canonicalization</h2>
+    </div>
+    <div class="spec reveal-text">
+      <div class="spec__row"><span class="spec__label">The Problem</span><div>
+        <p><b>Is this the same data?</b> Float32 results differ across hardware, and one dataset can be stored in many byte forms: signed zeros, NaN payloads, different orderings. Hashing the bytes does not answer the question.</p>
+        <p style="margin-top:12px;"><b>Has it changed since?</b> Compression is one-way, so nothing proves what comes out is what went in. And encryption without authentication can hide tampering until the data is read.</p>
+      </div></div>
+      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP gives a float32 dataset one canonical, reversible form with a built-in commitment to its content. Same data, same container. Altered data, failed verification.</p></div>
+      <ul class="spec__list">
+        <li><b>Canonical:</b> one deterministic form per dataset, identical across machines. The cross-hardware runs are in the Test Reports.</li>
+        <li><b>Tamper-evident:</b> any change to the decoded data fails verification. We flipped every bit of a 1,000-element file: 38,430 of 38,440 flips were rejected, and the 10 that passed decode to identical content. <a href="integrity.html#tested" style="color:var(--gold);">The test &rarr;</a></li>
+        <li><b>Reversible:</b> <code>unsort</code> reconstructs the exact original bytes.</li>
+        <li><b>Not a speed tax:</b> at 100 million elements SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs: 4.65x and 4.40x on uniform and normal data (CPU run), 4.77x and 4.31x (GPU run), up to 27.09x on duplicate-heavy data. It is slower on subnormals and sawtooth, and below roughly 100,000 elements. These times include SPCMP&rsquo;s compression and its unsort record, which the other sorts do not do. Charts below.</li>
+      </ul>
+      <p class="test-note" style="margin-top:14px;"><b>Where it stops:</b> the commitment lives inside the file, so on its own it cannot say who made the file. Authenticated Verification adds that: a detached signature over the finished file, checked before anything else. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity</a>.</p>
+    </div>
+
+    <h3 class="spec__sub reveal-text">The 4 Commands</h3>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">./spcmp</span></div>
+      <pre class="terminal-body"><span class="term-dim"># 1. Sort and compress the original array</span>
+<span class="term-cmd">./spcmp sort input.bin</span>
+
+<span class="term-dim"># 2. Verify the Merkle commitment</span>
+<span class="term-cmd">python3 verify.py input.sorted.pcmp --info</span>
+
+<span class="term-dim"># 3. Reconstruct the original array</span>
+<span class="term-cmd">./spcmp unsort input</span>
+
+<span class="term-dim"># 4. Compare for byte-for-byte lossless recovery</span>
+<span class="term-cmd">cmp input.bin input.unsorted.bin</span></pre>
+    </div>
+
+    <h3 class="spec__sub reveal-text">verify.py output</h3>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">verify.py &middot; summary mode &middot; abbreviated</span></div>
+      <pre class="terminal-body"><span class="term-dim">$ </span><span class="term-cmd">python3 verify.py model_weights_1m.sorted.pcmp</span>
+[<span class="term-ok">OK</span>] model_weights_1m.sorted.pcmp n=1000000
+
+<span class="term-dim">$ </span><span class="term-cmd">python3 verify.py model_weights_1m_altered.sorted.pcmp</span>
+[<span class="term-warn">FAIL</span>] model_weights_1m_altered.sorted.pcmp n=1000000
+
+<span class="term-dim"># exit status 0 = accepted, 1 = rejected, so it drops straight into a pipeline step</span></pre>
+    </div>
+
+    <h3 class="spec__sub reveal-text">Layer 2: Sign and Verify with verify_v2.py</h3>
+    <p class="test-note reveal-text" style="margin-bottom:14px;">Continues from the sorted file above. Sign it once with your private key, then verify with the matching public key. <code>verify_v2.py</code> authenticates the exact bytes first, then runs the same logical verification as <code>verify.py</code>.</p>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">pcmp_sign.py &middot; verify_v2.py &middot; abbreviated</span></div>
+      <pre class="terminal-body"><span class="term-dim"># 5. Sign the sorted file (prompts for the private-key passphrase)</span>
+<span class="term-cmd">python3 pcmp_sign.py sign input.sorted.pcmp \
+  --private-key pcmp_ed25519_private.pem \
+  --key-id my-prod-key</span>
+Signed artifact: input.sorted.pcmp
+SHA-256:        64c9031104bc&hellip;
+Key ID:         my-prod-key
+Manifest:       input.sorted.pcmp.manifest.json
+
+<span class="term-dim"># 6. Verify authenticity first, then the contents</span>
+<span class="term-cmd">python3 verify_v2.py input.sorted.pcmp \
+  --public-key pcmp_ed25519_public.pem \
+  --expected-key-id my-prod-key \
+  --info</span>
+Artifact authentication:     <span class="term-ok">PASS</span>
+  Signature:                 <span class="term-ok">PASS</span>
+  Exact-byte SHA-256:        <span class="term-ok">PASS</span>
+  Key ID:                    my-prod-key
+SPCMP logical verification:  <span class="term-ok">PASS</span>
+Combined result:             <span class="term-ok">ACCEPT</span></pre>
+    </div>
+  </section>
+
+  <section id="scale">
+    <div class="section-head reveal-text">
+      <h2>How It Scales</h2>
+      <p>Watch the same job get bigger. Each lane shows how many elements per second an algorithm sustains as the dataset grows from 1,000 to 100,000,000. SPCMP&rsquo;s figure covers sorting, compression and building the unsort record. The others only sort.</p>
+    </div>
+    <div class="bench__tabs reveal-text" role="tablist" aria-label="Benchmark run">
+      <button type="button" class="env-tab" data-bench-dev="gpu">GPU run</button>
+      <button type="button" class="env-tab" data-bench-dev="cpu">CPU run</button>
+      <span class="bench__who" data-dev-label></span>
+    </div>
+    <div class="sr glass reveal-image" id="sr">
+      <div class="sr__top">
+        <div class="sr__n"><span>elements</span><b id="sr-n">1,000</b></div>
+        <div class="sr__head" id="sr-head" aria-live="polite"></div>
+      </div>
+      <div class="sr__lanes" id="sr-lanes"></div>
+      <svg class="sr__svg" id="sr-svg" viewBox="0 0 640 250" role="img" aria-label="Throughput against dataset size for each algorithm, log-log"></svg>
+      <div class="sr__ctrl">
+        <button type="button" class="sim__go" id="sr-play">&#9654; Play</button>
+        <input type="range" id="sr-t" min="0" max="1000" value="0" aria-label="Dataset size">
+        <select id="sr-type" aria-label="Dataset type"></select>
+      </div>
+      <p class="sim__foot">Measured at 1,000, 10,000, 100,000, 1,000,000, 10,000,000 and 100,000,000 elements. The glide between those sizes is interpolated. Throughput is total elements divided by total time across the chosen dataset types. <span data-dev-label></span>.</p>
+    </div>
+  </section>
+
+  <section id="simulation">
+    <div class="section-head reveal-text">
+      <h2>Speed Simulation</h2>
+      <p>Pick a dataset type and a size, then race SPCMP against numpy quicksort, numpy mergesort and C++ <code>std::sort</code>. Every bar is driven by the recorded times from the result files below, replayed with the slowest lane stretched to a few seconds. It is a replay, not a live benchmark.</p>
+    </div>
+    <div class="sim glass reveal-image" id="sim">
+      <div class="sim__ctrl">
+        <div><label for="sim-type">Dataset type</label><select id="sim-type"></select></div>
+        <div><label for="sim-n">Elements <span class="sim__n" id="sim-n-out"></span></label><input id="sim-n" type="range" min="0" max="5" step="1" value="5"></div>
+        <button type="button" class="sim__go" id="sim-go">&#9654; Run the race</button>
+      </div>
+      <div class="lanes" id="sim-lanes"></div>
+      <div class="sim__verdict" id="sim-verdict" aria-live="polite"></div>
+      <div class="ladder" id="sim-ladder" aria-label="SPCMP speedup over numpy quicksort at each size for this dataset type"></div>
+      <p class="sim__foot">Strip above: SPCMP speedup over numpy quicksort at each size for the selected type. Red means SPCMP was slower. <span data-dev-label></span>. A time shown as &lt;1 &micro;s is below the timer resolution of the run.</p>
+    </div>
+  </section>
+
+  <section id="benchmarks">
+    <div class="section-head reveal-text">
+      <h2>Performance Benchmarks</h2>
+    </div>
+    <p class="bench-note reveal-text">Reversibility and cryptographic proof should not cost you speed. We benchmarked SPCMP against numpy quicksort, mergesort, heapsort and stable, C++ <code>std::sort</code>, and Python <code>sorted()</code> across sizes from 1,000 to 100,000,000 elements and 20 dataset types. Times are best-of-N; speedup is numpy quicksort time divided by SPCMP-reported time. SPCMP&rsquo;s time covers three jobs: sorting, compression and building the unsort record. The other algorithms only sort. At 1,000 elements SPCMP takes roughly 90 to 270 &micro;s on both runs, against about 3 &micro;s for numpy quicksort, so numpy wins there. Against numpy quicksort the crossover sits around 100,000 to 1,000,000 elements on the CPU run (11 of 20 types faster at 100,000, 17 of 20 at 1,000,000) and around 1,000,000 to 10,000,000 elements on the GPU run (6 of 20 at 100,000, 12 of 20 at 1,000,000, 18 of 20 at 10,000,000).</p>
+    <div class="bench__tabs" role="tablist" aria-label="Benchmark run">
+      <button type="button" class="env-tab" data-bench-dev="gpu">GPU run</button>
+      <button type="button" class="env-tab" data-bench-dev="cpu">CPU run</button>
+      <span class="bench__who" data-dev-label></span>
+    </div>
+    <div class="deck reveal-image" id="deck" tabindex="0" role="group" aria-label="Benchmark charts. Hover or focus to spread the deck, then click a chart to inspect it." data-n="4">
+        <figure class="deck__card" style="--i:0"><img data-zoom data-group="bench" data-title="Throughput scaling" data-gpu="assets/speed_results/throughput_scaling_gpu.png" data-cpu="assets/speed_results/throughput_scaling_cpu.png" data-cap-gpu="GPU run (RTX 3050 6GB), average throughput. SPCMP is lowest of all at 1,000 and 10,000 elements and passes std::sort, numpy mergesort and stable between 100,000 and 1,000,000. numpy quicksort and heapsort stay ahead until between 1,000,000 and 10,000,000 elements; from 10,000,000 SPCMP is above every other algorithm and keeps rising to 100,000,000." data-cap-cpu="CPU run, average throughput. SPCMP is lowest of all at 1,000 and 10,000 elements and passes std::sort, numpy mergesort and stable by 100,000. numpy quicksort and heapsort stay ahead until between 1,000,000 and 10,000,000 elements; from 10,000,000 SPCMP is above every other algorithm. It peaks at 10,000,000 and is lower at 100,000,000." src="assets/speed_results/throughput_scaling_gpu.png" alt="Throughput scaling" loading="lazy" decoding="async"><figcaption>Throughput scaling</figcaption></figure>
+        <figure class="deck__card" style="--i:1"><img data-zoom data-group="bench" data-title="Speedup by dataset type" data-gpu="assets/speed_results/speedup_ranking_gpu.png" data-cpu="assets/speed_results/speedup_ranking_cpu.png" data-cap-gpu="GPU run. Averaged across all sizes, including the small sizes where SPCMP loses: faster than numpy quicksort on 16 of 20 types. Top: duplicate_heavy_tail 17.09x, sorted_ascending 10.97x, sorted_descending 6.02x; normal 2.19x, uniform_random 2.18x. Below 1.0x: clustered 0.86x, few_unique 0.78x, sawtooth 0.77x, subnormals 0.13x." data-cap-cpu="CPU run. Averaged across all sizes, including the small sizes where SPCMP loses: faster than numpy quicksort on 18 of 20 types. Top: duplicate_heavy_tail 17.04x, sorted_ascending 11.73x, sorted_descending 5.85x; uniform_random 2.53x, normal 2.26x. Below 1.0x: few_unique 0.50x, subnormals 0.22x." src="assets/speed_results/speedup_ranking_gpu.png" alt="Speedup by dataset type" loading="lazy" decoding="async"><figcaption>Speedup by dataset type</figcaption></figure>
+        <figure class="deck__card" style="--i:2"><img data-zoom data-group="bench" data-title="Speedup heatmap" data-gpu="assets/speed_results/speedup_heatmap_gpu.png" data-cpu="assets/speed_results/speedup_heatmap_cpu.png" data-cap-gpu="Values above 1.0x mean SPCMP is faster than numpy quicksort; the colour scale starts at 0x, so low values above 1.0x also look red. At 1,000 elements SPCMP is slower on 15 of the 17 types that registered a time. It is faster on 4 of 20 types at 10,000, 6 at 100,000, 12 at 1,000,000, and 18 at both 10,000,000 and 100,000,000. At 100,000,000 it reaches 4.77x and 4.31x on uniform and normal data and 25.52x on duplicate_heavy_tail; it is slower on sawtooth (0.77x) and subnormals (0.37x)." data-cap-cpu="Values above 1.0x mean SPCMP is faster than numpy quicksort; the colour scale starts at 0x, so low values above 1.0x also look red. At 1,000 elements SPCMP is slower on 15 of the 16 types that registered a time. It is faster on 4 of 20 types at 10,000, 11 at 100,000, 17 at 1,000,000, and 18 at both 10,000,000 and 100,000,000. At 100,000,000 it reaches 4.65x and 4.40x on uniform and normal data and 27.09x on duplicate_heavy_tail; it is slower on sawtooth (0.50x) and subnormals (0.12x)." src="assets/speed_results/speedup_heatmap_gpu.png" alt="Speedup heatmap" loading="lazy" decoding="async"><figcaption>Speedup heatmap</figcaption></figure>
+        <figure class="deck__card" style="--i:3"><img data-zoom data-group="bench" data-title="All dataset types" data-gpu="assets/speed_results/all_types_grid_gpu.png" data-cpu="assets/speed_results/all_types_grid_cpu.png" data-cap-gpu="Sort time against size for each of the 20 dataset types, all algorithms, log-log (GPU run)." data-cap-cpu="Sort time against size for each of the 20 dataset types, all algorithms, log-log (CPU run)." src="assets/speed_results/all_types_grid_gpu.png" alt="All dataset types" loading="lazy" decoding="async"><figcaption>All dataset types</figcaption></figure>
+      </div>
+    <p class="deck__hint reveal-text">Hover to spread the deck. Click a chart to inspect it, then use the arrow keys to move through them. The run toggle above switches every chart.</p>
+    <div class="doc-subhead mono reveal-text" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">Raw results</div>
+    <div class="bench-files reveal-text">
+      <a href="assets/speed_results/gpu_benchmark.txt" download="gpu_benchmark.txt" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>GPU run results</a>
+      <a href="assets/speed_results/cpu_benchmark.txt" download="cpu_benchmark.txt" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>CPU run results</a>
+    </div>
+  </section>
+
+  <section id="validation">
+    <div class="section-head reveal-text">
+      <h2>Test Suite &amp; Validation</h2>
+    </div>
+    <ul class="spec__list reveal-text">
+      <li><b>SPCMP:</b> 42/42 adversarial assertions passed (NaNs, subnormals, extreme boundaries).</li>
+    </ul>
+  </section>
+
+  <section id="reports">
+    <div class="section-head reveal-text">
+      <h2>Test Reports</h2>
+      <p>Primary source documents. Not marketing copy.</p>
+    </div>
+    <div class="doc-subhead mono reveal-text" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">SPCMP / Samayuktam</div>
+    <table class="ledger reveal-text">
+      <tr><th>Report</th><th>Scope</th><th>Link</th></tr>
+      <tr><td>PCMP / SPCMP Verification Report <span style="color:var(--sage); font-size:12px;">42/42 PASS</span></td><td>Every IEEE-754 edge case and degenerate array shape, checked against an independent Python oracle</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/PCMP-SPCMP%20Verification%20Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>SPCMP Cross-Hardware Verification</td><td>Google CPU, TPU, GPU, and a native GPU node -- identical Merkle root and hash on all four</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP_Cross_Hardware_Verification_Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Cross-Machine Determinism</td><td>20 sort runs, 4 heterogeneous machines, 5 files each -- zero divergent hashes</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/Cross-Machine-Determinism.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>SPCMP Determinism Report</td><td>Top-k / bottom-k convergence; documents the honest scalar-reduction limit</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP%20DETERMINISM%20Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Aerospace Verification Proof</td><td>40/40 assertions -- radiation bit-flip absorption, telemetry compression, GNC-loop determinism</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP_Aerospace_Proof_Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Scale Test Report</td><td>32 runs, 100k to 1B float32 elements, 8 data patterns -- zero failures</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/samayuktam_scale_report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Samayuktam Sorting Benchmark</td><td>CPU/GPU sort timing vs NumPy quicksort/mergesort/stable; 4.3&ndash;4.8&times; on uniform and normal at 100M elements, up to 27&times; on duplicate_heavy_tail</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/Processing%20benchmark.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+    </table>
+  </section>
+
+  <section id="cta">
+    <div class="section-head reveal-text">
+      <h2>Ready to test it against your pipeline?</h2>
+    </div>
+    <div class="casefile__cta" style="margin-top:0;">
+      <a class="cta cta--main" href="pilot.html">Request Pilot Access</a>
+      <a class="cta" href="divergence.html">Divergence record</a>
+      <a class="cta" href="specs.html">All specs</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>&copy; 2026 Samayuktam. Solo-built.</span>
+  <div>
+    <a href="https://github.com/SwapnopamMitra" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:swapnopam@samayuktam.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>

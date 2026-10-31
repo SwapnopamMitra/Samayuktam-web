@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>prove-model-drift -- Samayuktam</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/film.css">
+<link rel="stylesheet" href="css/festive.css">
+<link rel="stylesheet" href="css/divergence.css">
+<link rel="stylesheet" href="css/modeldrift.css">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/terminal.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/film.js" defer></script>
+<script src="js/lightbox.js" defer></script>
+<script src="js/modeldrift.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+
+<nav class="site-nav">
+  <a class="brand" href="index.html" aria-label="Samayuktam - back to home page" title="Back to home">
+    <img src="assets/images/page_logo.png" alt="Samayuktam logo">
+    <span class="serif" style="font-weight:600;">Samayuktam</span>
+  </a>
+  <div class="links">
+    <a href="index.html#proof">The Problem</a>
+    <a href="journey.html">Journey</a>
+    <a href="specs.html">Specs</a>
+    <a href="spcmp.html">SPCMP</a>
+    <a href="integrity.html">Integrity</a>
+    <a href="divergence.html">Divergence</a>
+    <a href="model-drift.html" class="active">Model Drift</a>
+    <a href="pilot.html">Pilot</a>
+  </div>
+</nav>
+
+<main>
+  <section class="md-hero">
+    <div>
+      <h1 class="serif">prove-model-drift</h1>
+      <p class="lede">Don&rsquo;t trust my binary. Don&rsquo;t trust my tests. Run this 40-line PyTorch script on your own machines.</p>
+      <div class="cta-row">
+        <a href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Model Drift Script</a>
+        <a href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download the script</a>
+      </div>
+      <div class="cmd-chip mono" aria-label="Command to run the script">
+        <span class="prompt">$</span><code>python3 prove_model_drift.py</code>
+        <button type="button" data-copy="python3 prove_model_drift.py">Copy</button>
+      </div>
+      <p class="test-note">
+        <b>Note:</b> <code>prove_model_drift.py</code> trains one small PyTorch network with one seed (42) and prints a SHA-256 hash of the final weights. It does not run CAGM; the CAGM results further down are a separate run.
+      </p>
+      <p class="test-note">
+        <b>What this shows:</b> Standard training pipelines are not bit-identical across hardware. A different hash on your machines is the result this script tests for. It does not isolate which specific component (CPU architecture, GPU, or library build) caused the drift. If your machines return the same hash, they behaved identically on this specific test.
+      </p>
+    </div>
+  </section>
+
+  <section id="what">
+    <div class="section-head reveal-text">
+      <h2>What is this?</h2>
+    </div>
+    <div class="md-prose reveal-text">
+      <p>Standard machine-learning training is not bit-exact across different hardware. Even if you fix the random seed, the initial weights, and the dataset, the underlying floating-point math drifts between CPU architectures, GPUs, and library builds.</p>
+    </div>
+    <div class="md-prose reveal-text">
+      <p>This repository contains a minimal PyTorch script that trains a small neural network and prints the SHA-256 hash of the final model weights.</p>
+    </div>
+  </section>
+
+  <section id="run" class="md-steps">
+    <div class="section-head reveal-text">
+      <h2>How to run it</h2>
+      <p>You need Python 3 and PyTorch.</p>
+    </div>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">bash</span></div>
+      <pre class="terminal-body"><span class="term-cmd">git clone https://github.com/SwapnopamMitra/prove-model-drift.git</span>
+<span class="term-cmd">cd prove-model-drift</span>
+<span class="term-cmd">python3 prove_model_drift.py</span></pre>
+    </div>
+    <div class="repro-cta reveal-text">
+      <a href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Open the repo</a>
+      <a href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download prove-model-drift.py</a>
+    </div>
+  </section>
+
+  <section id="results">
+    <div class="section-head reveal-text">
+      <h2>The Results (Tested October 2026)</h2>
+      <p>Same script, same seed (42), four different environments.</p>
+    </div>
+    <p class="md-results-lead reveal-text"><b>The final loss was identical on all four. The model weights were completely different.</b></p>
+
+    <div class="ledger-wrap reveal-text">
+    <table class="ledger ledger--stagger">
+      <tr><th>Environment</th><th>Device</th><th>PyTorch</th><th>Final Loss</th><th>Weights SHA-256</th></tr>
+      <tr data-e="1"><td>Colab CPU</td><td>Intel Xeon @ 2.20GHz</td><td class="mono">2.11.0+cpu</td><td class="mono loss">0.69410753</td><td class="mono">67ed1ee5...</td></tr>
+      <tr data-e="2"><td>Colab GPU</td><td>NVIDIA Tesla T4</td><td class="mono">2.11.0+cu130</td><td class="mono loss">0.69410753</td><td class="mono">0ae59421...</td></tr>
+      <tr data-e="3"><td>TPU VM (host CPU)</td><td>AMD EPYC 7B13</td><td class="mono">2.14.1+cpu</td><td class="mono loss">0.69410753</td><td class="mono">ef84b798...</td></tr>
+      <tr data-e="4"><td>Python Runner</td><td>Intel Xeon @ 2.80GHz</td><td class="mono">2.8.0</td><td class="mono loss">0.69410753</td><td class="mono">098cbd36...</td></tr>
+    </table>
+    </div>
+
+    <div class="fp-panel glass reveal-image" aria-label="The four weights hashes drawn as colour grids, one cell per hex character">
+      <div class="fp-panel__cap"><span><b>Fingerprint</b> &middot; one cell per hex character of the weights SHA-256</span><span>final loss 0.69410753 on all four</span></div>
+      <div class="fp-grid" id="fp-grid"></div>
+    </div>
+
+    <h3 class="spec__sub reveal-text">Full hashes</h3>
+    <div class="terminal glass reveal-image md-hashes">
+      <div class="terminal-bar"><span class="terminal-title">weights SHA-256</span></div>
+      <pre class="terminal-body"><span class="term-dim">Colab CPU      </span><span class="term-warn">67ed1ee52938f57d0c6d563eb84057e8a89aa164caf2186a0e64152dc23692a2</span>
+<span class="term-dim">Colab GPU      </span><span class="term-warn">0ae59421ab7821874cc8971673cc92743ade3d8b3244620893d17caf90a829d3</span>
+<span class="term-dim">TPU VM (host)  </span><span class="term-warn">ef84b798c8020f0100c2864bb9956b783ea1da566b66d64ddc92a4dcc2e6aa2d</span>
+<span class="term-dim">Python Runner  </span><span class="term-warn">098cbd36d74178015a5ced2560e0a296b6d57fabbb33a7f3b2be2cabd6c868a4</span></pre>
+    </div>
+
+    <h3 class="spec__sub reveal-text">Raw run metadata</h3>
+    <div class="md-meta">
+      <div class="terminal glass reveal-image">
+        <div class="terminal-bar"><span class="terminal-title" id="md-meta-title">run metadata</span></div>
+        <div class="env-tabs" id="md-env-tabs" role="tablist" aria-label="Recorded environments"></div>
+        <pre class="terminal-body" id="md-meta-body" aria-live="polite"></pre>
+      </div>
+
+      <div class="reveal-text">
+        <form class="checker glass" id="md-check" autocomplete="off" novalidate>
+          <label for="hash-in">Paste your weights SHA-256</label>
+          <div class="checker__row">
+            <input id="hash-in" type="text" inputmode="text" maxlength="64" placeholder="e.g. 67ed1ee5..." spellcheck="false">
+            <button type="submit">Check</button>
+          </div>
+          <div class="checker__out" aria-live="polite">Matches one of the four recorded hashes, or it is a fifth. A fifth is data.</div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="section-head reveal-text">
+      <h2>Why this matters</h2>
+    </div>
+    <div class="md-why reveal-text">
+      <p>If you are training an ML model for clinical use, finance, or compliance, you need to prove the model running today is mathematically identical to the model you validated last month. A matching loss is not proof. A matching hash is proof.</p>
+    </div>
+    <aside class="test-note test-note--block reveal-text" style="margin-top:22px;">
+      <p><b>Note:</b> <code>torch.use_deterministic_algorithms(True)</code> only guarantees run-to-run repeatability on the same machine. It does not fix cross-hardware drift.</p>
+    </aside>
+  </section>
+
+  <section id="fix">
+    <div class="section-head reveal-text">
+      <h2>The Fix</h2>
+    </div>
+    <div class="md-why reveal-text">
+      <p>I built <b>CAGM</b>, a fixed-point ML classifier that removes floating-point math from the training loop and emits a SHA-256 proof of the entire training trajectory.</p>
+      <p>I ran CAGM across the same four environments. Every run produced the exact same proof.</p>
+      <p>Four environments. Two CPU environments, an RTX 3050, and a Tesla T4. Same dataset. Same accuracy. Same training proof. Same model SHA-256.</p>
+    </div>
+
+    <div class="ledger-wrap reveal-text" style="margin-top:24px;">
+    <table class="ledger">
+      <tr><th>Environment</th><th>Accuracy</th><th>Training proof</th><th>Model SHA-256</th></tr>
+      <tr><td>Colab CPU</td><td class="mono">0.514460</td><td class="pass">Match</td><td class="pass">Match</td></tr>
+      <tr><td>TPU VM (host CPU)</td><td class="mono">0.514460</td><td class="pass">Match</td><td class="pass">Match</td></tr>
+      <tr><td>Local RTX 3050 6GB</td><td class="mono">0.514460</td><td class="pass">Match</td><td class="pass">Match</td></tr>
+      <tr><td>Colab Tesla T4</td><td class="mono">0.514460</td><td class="pass">Match</td><td class="pass">Match</td></tr>
+    </table>
+    </div>
+
+    <div class="md-cagm-hash reveal-text">
+      <div class="doc-subhead mono">Dataset SHA-256:</div>
+      <code>737649857cd126fb09cd3cd9d0f63b39353f09eb73fc6c6642597ff3f35d3f96</code>
+      <div class="doc-subhead mono">Model SHA-256 (<span style="color:var(--text-dim);">cagm_model1.onnx</span>), identical in all four environments:</div>
+      <code>f32522987216045155d0be61753f6f9d7218ee61aea427b4ea08e2faf14efe5e</code>
+    </div>
+
+    <p class="md-prose reveal-text">If you want to see how it works, look at <a href="index.html" style="color:var(--gold);">samayuktam.com</a>.</p>
+  </section>
+
+  <section id="cta">
+    <div class="section-head reveal-text">
+      <h2>Run it on your own machines</h2>
+    </div>
+    <div class="casefile__cta" style="margin-top:0;">
+      <a class="cta cta--main" href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py">Download the script</a>
+      <a class="cta" href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener">Open the repo</a>
+      <a class="cta" href="pilot.html">Request Pilot Access</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>&copy; 2026 Samayuktam. Solo-built.</span>
+  <div>
+    <a href="https://github.com/SwapnopamMitra" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:swapnopam@samayuktam.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>

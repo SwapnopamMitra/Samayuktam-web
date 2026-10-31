@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/film.css">
 <link rel="stylesheet" href="css/festive.css">
 <link rel="stylesheet" href="css/divergence.css">
+<link rel="stylesheet" href="css/pages.css">
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
@@ -16,6 +17,7 @@
 <script src="js/film.js" defer></script>
 <script src="js/lightbox.js" defer></script>
 <script src="js/divergence.js" defer></script>
+<script src="js/bench.js" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -27,6 +29,10 @@
     <a href="index.html#proof">The Problem</a>
     <a href="journey.html">Journey</a>
     <a href="specs.html" class="active">Specs</a>
+    <a href="spcmp.html">SPCMP</a>
+    <a href="integrity.html">Integrity</a>
+    <a href="divergence.html">Divergence</a>
+    <a href="model-drift.html">Model Drift</a>
     <a href="pilot.html">Pilot</a>
   </div>
 </nav>
@@ -44,67 +50,14 @@
       <h2>1. The Divergence Baseline</h2>
       <p>Everything else on this page is measured against this one number.</p>
     </div>
-    <aside class="test-note test-note--block reveal-text">
-      <p><b>Before you run the script:</b> Pick two machines that are actually different. An Intel laptop and an AMD cloud VM, or a local WSL2 instance and a Colab instance. If you run it on two identical work laptops, they will likely match, and you will miss the divergence.</p>
-    </aside>
     <div class="spec reveal-text">
-      <div class="spec__row"><span class="spec__label">The Test</span><p><code>prove_divergence.py</code> prints the host CPU model and Python version, runs a sorting-then-summing experiment, and reports the sorted-sum with its hex view.</p></div>
       <div class="spec__row"><span class="spec__label">The Result</span><p>Five environments produced three different sums, spread across 1.25390625. An Intel Xeon and an AMD EPYC agree; two Intel Xeons disagree. The vendor on the chip does not predict the answer.</p></div>
-      <div class="spec__row"><span class="spec__label">Not Claimed</span><p>The script does not isolate the cause. CPU instruction set, library build and interpreter version are all uncontrolled across these runs (Python 3.12.3, 3.13.7 and 3.13.16 appear). The script prints the Python version so you can compare like with like. Run it on your own fleet; that is the test that matters.</p></div>
     </div>
-
-    <div class="ledger-wrap reveal-text">
-    <table class="ledger ledger--stagger">
-      <tr><th>Environment</th><th>CPU</th><th>Python</th><th>Sorted-sum</th><th>Hex view</th><th>Result</th></tr>
-      <tr data-g="B"><td>Prime (WSL2)</td><td>Intel i5-12450HX</td><td class="mono">3.12.3</td><td class="mono">2190.0</td><td class="mono">00e00845</td><td><span class="grp" data-g="B"><i></i>B</span></td></tr>
-      <tr data-g="B"><td>OnlineGDB</td><td>Intel Xeon @ 2.80GHz</td><td class="mono">3.13.7</td><td class="mono">2190.0</td><td class="mono">00e00845</td><td><span class="grp" data-g="B"><i></i>B</span></td></tr>
-      <tr data-g="A"><td>Colab CPU</td><td>Intel Xeon @ 2.00GHz</td><td class="mono">3.13.16</td><td class="mono">2190.9140625</td><td class="mono">a0ee0845</td><td><span class="grp" data-g="A"><i></i>A</span></td></tr>
-      <tr data-g="C"><td>Colab CPU</td><td>Intel Xeon @ 2.20GHz</td><td class="mono">3.13.16</td><td class="mono">2191.25390625</td><td class="mono">10f40845</td><td><span class="grp" data-g="C"><i></i>C</span></td></tr>
-      <tr data-g="C"><td>Colab CPU</td><td>AMD EPYC 7B12</td><td class="mono">3.13.16</td><td class="mono">2191.25390625</td><td class="mono">10f40845</td><td><span class="grp" data-g="C"><i></i>C</span></td></tr>
-    </table>
-    </div>
-
-    <div class="spread glass reveal-image" aria-label="The three sorted-sum results plotted on one line, 2190.0 to 2191.25390625">
-      <div class="spread__cap"><span><b>Spread</b> &middot; one sum, three landing points</span><span>&Delta; 1.25390625</span></div>
-      <div class="spread__line">
-        <div class="spread__pt up edge-l" data-g="B" style="--pos:0%; --d:0;"><span><b>B &middot; 2190.0</b>Prime &middot; OnlineGDB</span></div>
-        <div class="spread__pt dn" data-g="A" style="--pos:72.9%; --d:250;"><span><b>A &middot; 2190.9140625</b>Colab Xeon 2.00</span></div>
-        <div class="spread__pt up edge-r" data-g="C" style="--pos:100%; --d:500;"><span><b>C &middot; 2191.25390625</b>Colab Xeon 2.20 &middot; EPYC</span></div>
-      </div>
-    </div>
-
-    <h3 class="spec__sub reveal-text">Reproduce it</h3>
-    <div class="terminal glass reveal-image">
-      <div class="terminal-bar"><span class="terminal-title">prove_divergence.py &middot; sample output</span></div>
-      <pre class="terminal-body" style="overflow-x:auto; white-space:pre; font-size:12.5px; line-height:1.65;"><span class="term-dim"># 1. Get the script (or download it from this page)</span>
-<span class="term-cmd">git clone https://github.com/SwapnopamMitra/float-divergence-script.git</span>
-<span class="term-cmd">cd float-divergence-script</span>
-
-<span class="term-dim"># 2. Run it</span>
-<span class="term-cmd">python3 prove_divergence.py</span>
-
-<span class="term-dim">============================================================</span>
-HARDWARE &amp; MEMORY TELEMETRY
-<span class="term-dim">============================================================</span>
-<span class="term-dim">CPU Model : </span>AMD EPYC 7B12
-<span class="term-dim">Python    : </span>3.13.16
-<span class="term-dim">============================================================</span>
-
-<span class="term-dim">Running Architecture-Sensitive Sorting Divergence Experiment...</span>
-<span class="term-dim">Sorted-Sum Result (Sum)   : </span><span class="term-warn">2191.25390625</span>
-<span class="term-dim">Sorted-Sum Hex View       : </span><span class="term-warn">10f40845</span>
-<span class="term-dim">============================================================</span></pre>
-    </div>
-
     <div class="repro-cta reveal-text">
-      <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Divergence Script</a>
+      <a href="divergence.html" class="btn btn-solid">Full divergence record &rarr;</a>
+      <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Divergence Script</a>
       <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download the script</a>
-      <a href="index.html#reproduce" class="btn">Compare your hex &rarr;</a>
     </div>
-    <aside class="test-note test-note--block reveal-text">
-      <h3 class="serif">What if my machines match?</h3>
-      <p>If your hex view matches one of the results (A, B, or C) above, those machines behaved identically on this test. That does not prove they share identical hardware (as seen by the Intel and AMD results in Result C). To see the divergence at the binary level on identical environments, run the six-node harness in the <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener">x86-float32-output-divergence repo</a>.</p>
-    </aside>
   </section>
 
   <section id="spcmp">
@@ -112,63 +65,37 @@ HARDWARE &amp; MEMORY TELEMETRY
       <h2>2. SPCMP (Float32 Container &amp; Canonicalization)</h2>
     </div>
     <div class="spec reveal-text">
-      <div class="spec__row"><span class="spec__label">The Problem</span><p>IEEE-754 binary32 values diverge across heterogeneous hardware due to NaN payloads, signed zeros, and FMA rounding differences. <a href="#baseline" style="color:var(--gold);">Measured below in the baseline.</a></p></div>
-      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP is a reversible float32 container format that enforces a deterministic total order.</p></div>
+      <div class="spec__row"><span class="spec__label">The Problem</span><div>
+        <p><b>Is this the same data?</b> Float32 results differ across hardware, and one dataset can be stored in many byte forms: signed zeros, NaN payloads, different orderings. Hashing the bytes does not answer the question.</p>
+        <p style="margin-top:12px;"><b>Has it changed since?</b> Compression is one-way, so nothing proves what comes out is what went in. And encryption without authentication can hide tampering until the data is read.</p>
+      </div></div>
+      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP gives a float32 dataset one canonical, reversible form with a built-in commitment to its content. Same data, same container. Altered data, failed verification.</p></div>
       <ul class="spec__list">
-        <li><b>Canonicalization:</b> All NaN payloads collapse to <code>0x7FC00000</code>. <code>-0.0</code> collapses to <code>+0.0</code>. All other floats remain bit-exact.</li>
-        <li><b>Ordering:</b> Bijective mapping to <code>uint32</code> for unsigned comparison.</li>
-        <li><b>Compression:</b> Order-0/1/2 predictive delta transform followed by Zstandard.</li>
-        <li><b>Verification:</b> Fail-closed SHA-256 Merkle root over the uncompressed predictive stream.</li>
+        <li><b>Canonical:</b> one deterministic form per dataset, identical across machines. The cross-hardware runs are in the Test Reports.</li>
+        <li><b>Tamper-evident:</b> any change to the decoded data fails verification. We flipped every bit of a 1,000-element file: 38,430 of 38,440 flips were rejected, and the 10 that passed decode to identical content. <a href="integrity.html#tested" style="color:var(--gold);">The test &rarr;</a></li>
+        <li><b>Reversible:</b> <code>unsort</code> reconstructs the exact original bytes.</li>
+        <li><b>Not a speed tax:</b> at 100 million elements SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs: 4.65x and 4.40x on uniform and normal data (CPU run), 4.77x and 4.31x (GPU run), up to 27.09x on duplicate-heavy data. It is slower on subnormals and sawtooth, and below roughly 100,000 elements. These times include SPCMP&rsquo;s compression and its unsort record, which the other sorts do not do. Charts below.</li>
       </ul>
+      <p class="test-note" style="margin-top:14px;"><b>Where it stops:</b> the commitment lives inside the file, so on its own it cannot say who made the file. Authenticated Verification adds that: a detached signature over the finished file, checked before anything else. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity</a>.</p>
     </div>
-
-    <h3 class="spec__sub reveal-text">The 4 Commands</h3>
-    <div class="terminal glass reveal-image">
-      <div class="terminal-bar"><span class="terminal-title">./spcmp</span></div>
-      <pre class="terminal-body"><span class="term-dim"># 1. Sort and compress the original array</span>
-<span class="term-cmd">./spcmp sort input.bin</span>
-
-<span class="term-dim"># 2. Verify the Merkle commitment</span>
-<span class="term-cmd">python3 verify.py input.sorted.pcmp --info</span>
-
-<span class="term-dim"># 3. Reconstruct the original array</span>
-<span class="term-cmd">./spcmp unsort input</span>
-
-<span class="term-dim"># 4. Compare for byte-for-byte lossless recovery</span>
-<span class="term-cmd">cmp input.bin input.unsorted.bin</span></pre>
+    <h3 class="spec__sub reveal-text" id="benchmarks">Performance Benchmarks</h3>
+    <p class="bench-note reveal-text">Reversibility and cryptographic proof should not cost you speed. We benchmarked SPCMP against numpy quicksort, mergesort, heapsort and stable, C++ <code>std::sort</code>, and Python <code>sorted()</code> across sizes from 1,000 to 100,000,000 elements and 20 dataset types. Times are best-of-N; speedup is numpy quicksort time divided by SPCMP-reported time. SPCMP&rsquo;s time covers three jobs: sorting, compression and building the unsort record. The other algorithms only sort. At 1,000 elements SPCMP takes roughly 90 to 270 &micro;s on both runs, against about 3 &micro;s for numpy quicksort, so numpy wins there. Against numpy quicksort the crossover sits around 100,000 to 1,000,000 elements on the CPU run (11 of 20 types faster at 100,000, 17 of 20 at 1,000,000) and around 1,000,000 to 10,000,000 elements on the GPU run (6 of 20 at 100,000, 12 of 20 at 1,000,000, 18 of 20 at 10,000,000).</p>
+    <div class="bench__tabs" role="tablist" aria-label="Benchmark run">
+      <button type="button" class="env-tab" data-bench-dev="gpu">GPU run</button>
+      <button type="button" class="env-tab" data-bench-dev="cpu">CPU run</button>
+      <span class="bench__who" data-dev-label></span>
     </div>
-
-    <h3 class="spec__sub reveal-text">verify.py output</h3>
-    <div class="terminal glass reveal-image">
-      <div class="terminal-bar"><span class="terminal-title">verify.py &middot; one file</span></div>
-      <pre class="terminal-body"><span class="term-dim"># filename.sorted.pcmp verifies one file; *.pcmp verifies every .pcmp file in the directory</span>
-<span class="term-dim">$ </span><span class="term-cmd">python3 verify.py model_weights_1m.sorted.pcmp --info</span>
-
-<span class="term-dim">=== model_weights_1m.sorted.pcmp ===</span>
-file                        : model_weights_1m.sorted.pcmp
-valid                       : <span class="term-ok">True</span>
-error                       : None
-magic                       : PCMP
-version                     : 1
-order                       : 2
-n                           : 1000000
-ordering_ok                 : <span class="term-ok">True</span>
-ordering_violation_index    : None
-permutation_ok              : <span class="term-ok">True</span>
-cvd_ok                      : <span class="term-ok">True</span>
-cvd_violation_index         : None
-cvd_violation_reason        : None
-meta_ok                     : <span class="term-ok">True</span>
-proof_type                  : 1
-ordering_mode               : 2
-chunk_bytes                 : 4194304
-total_n                     : 1000000
-num_chunks                  : 1
-stored_merkle_root          : <span class="term-warn">306bbd79ae6cc9843015f59134e95963545d405bb88f788c1e8d1ab83eeda8ab</span>
-computed_merkle_root        : <span class="term-warn">306bbd79ae6cc9843015f59134e95963545d405bb88f788c1e8d1ab83eeda8ab</span>
-merkle_match                : <span class="term-ok">True</span>
-footer_magic                : 0x50434d50
-footer_version              : 1</pre>
+    <div class="deck reveal-image" id="deck" tabindex="0" role="group" aria-label="Benchmark charts. Hover or focus to spread the deck, then click a chart to inspect it." data-n="3">
+        <figure class="deck__card" style="--i:0"><img data-zoom data-group="bench" data-title="Throughput scaling" data-gpu="assets/speed_results/throughput_scaling_gpu.png" data-cpu="assets/speed_results/throughput_scaling_cpu.png" data-cap-gpu="GPU run (RTX 3050 6GB), average throughput. SPCMP is lowest of all at 1,000 and 10,000 elements and passes std::sort, numpy mergesort and stable between 100,000 and 1,000,000. numpy quicksort and heapsort stay ahead until between 1,000,000 and 10,000,000 elements; from 10,000,000 SPCMP is above every other algorithm and keeps rising to 100,000,000." data-cap-cpu="CPU run, average throughput. SPCMP is lowest of all at 1,000 and 10,000 elements and passes std::sort, numpy mergesort and stable by 100,000. numpy quicksort and heapsort stay ahead until between 1,000,000 and 10,000,000 elements; from 10,000,000 SPCMP is above every other algorithm. It peaks at 10,000,000 and is lower at 100,000,000." src="assets/speed_results/throughput_scaling_gpu.png" alt="Throughput scaling" loading="lazy" decoding="async"><figcaption>Throughput scaling</figcaption></figure>
+        <figure class="deck__card" style="--i:1"><img data-zoom data-group="bench" data-title="Speedup by dataset type" data-gpu="assets/speed_results/speedup_ranking_gpu.png" data-cpu="assets/speed_results/speedup_ranking_cpu.png" data-cap-gpu="GPU run. Averaged across all sizes, including the small sizes where SPCMP loses: faster than numpy quicksort on 16 of 20 types. Top: duplicate_heavy_tail 17.09x, sorted_ascending 10.97x, sorted_descending 6.02x; normal 2.19x, uniform_random 2.18x. Below 1.0x: clustered 0.86x, few_unique 0.78x, sawtooth 0.77x, subnormals 0.13x." data-cap-cpu="CPU run. Averaged across all sizes, including the small sizes where SPCMP loses: faster than numpy quicksort on 18 of 20 types. Top: duplicate_heavy_tail 17.04x, sorted_ascending 11.73x, sorted_descending 5.85x; uniform_random 2.53x, normal 2.26x. Below 1.0x: few_unique 0.50x, subnormals 0.22x." src="assets/speed_results/speedup_ranking_gpu.png" alt="Speedup by dataset type" loading="lazy" decoding="async"><figcaption>Speedup by dataset type</figcaption></figure>
+        <figure class="deck__card" style="--i:2"><img data-zoom data-group="bench" data-title="Speedup heatmap" data-gpu="assets/speed_results/speedup_heatmap_gpu.png" data-cpu="assets/speed_results/speedup_heatmap_cpu.png" data-cap-gpu="Values above 1.0x mean SPCMP is faster than numpy quicksort; the colour scale starts at 0x, so low values above 1.0x also look red. At 1,000 elements SPCMP is slower on 15 of the 17 types that registered a time. It is faster on 4 of 20 types at 10,000, 6 at 100,000, 12 at 1,000,000, and 18 at both 10,000,000 and 100,000,000. At 100,000,000 it reaches 4.77x and 4.31x on uniform and normal data and 25.52x on duplicate_heavy_tail; it is slower on sawtooth (0.77x) and subnormals (0.37x)." data-cap-cpu="Values above 1.0x mean SPCMP is faster than numpy quicksort; the colour scale starts at 0x, so low values above 1.0x also look red. At 1,000 elements SPCMP is slower on 15 of the 16 types that registered a time. It is faster on 4 of 20 types at 10,000, 11 at 100,000, 17 at 1,000,000, and 18 at both 10,000,000 and 100,000,000. At 100,000,000 it reaches 4.65x and 4.40x on uniform and normal data and 27.09x on duplicate_heavy_tail; it is slower on sawtooth (0.50x) and subnormals (0.12x)." src="assets/speed_results/speedup_heatmap_gpu.png" alt="Speedup heatmap" loading="lazy" decoding="async"><figcaption>Speedup heatmap</figcaption></figure>
+      </div>
+    <p class="deck__hint reveal-text">Hover to spread the deck. Click a chart to inspect it, then use the arrow keys to move through them. The run toggle above switches every chart.</p>
+    <div class="repro-cta reveal-text">
+      <a href="spcmp.html" class="btn btn-solid">SPCMP specs and verification &rarr;</a>
+      <a href="integrity.html" class="btn">Three layers of integrity &rarr;</a>
+      <a href="spcmp.html#scale" class="btn">Watch it scale &rarr;</a>
+      <a href="spcmp.html#simulation" class="btn">Run the speed simulation &rarr;</a>
     </div>
   </section>
 
@@ -189,7 +116,7 @@ footer_version              : 1</pre>
     <div class="terminal glass reveal-image" style="margin-top:8px;">
       <div class="terminal-bar"><span class="terminal-title">./cagm</span></div>
       <pre class="terminal-body"><span class="term-dim">$ </span><span class="term-cmd">./cagm diabetes_cagm_ready.csv --hidden 64 --epochs 100 --batch 64 --lr 0.005</span>
-<span class="term-dim">License OK &mdash; server check: </span><span class="term-pass">PASS</span><span class="term-dim"> | uses remaining: </span><span class="term-ok">15</span>
+<span class="term-dim">License OK, server check: </span><span class="term-pass">PASS</span><span class="term-dim"> | uses remaining: </span><span class="term-ok">15</span>
 <span class="term-dim">Loaded: </span>diabetes_cagm_ready.csv<span class="term-dim">  rows=768  features=8  classes=2</span>
 <span class="term-dim">Early stopping at epoch 29 (best=9, acc=0.8333)</span>
 accuracy  <span class="term-ok">0.785156</span>
@@ -233,6 +160,7 @@ ie_verify <span class="term-pass">PASS</span><span class="term-dim">  (hash=0x59
     <table class="ledger reveal-text" style="margin-bottom:28px;">
       <tr><th>Source</th><th>Scope</th><th>Link</th></tr>
       <tr><td>float-divergence-script</td><td>Sorted-sum experiment, 5 environments, 3 distinct results. Runs anywhere Python runs.</td><td><a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a> &middot; <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" style="color:var(--gold);">Script</a></td></tr>
+      <tr><td>prove-model-drift</td><td>Same PyTorch script, same seed, 4 environments: identical final loss, 4 different weights hashes</td><td><a href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a> &middot; <a href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py" style="color:var(--gold);">Script</a> &middot; <a href="model-drift.html" style="color:var(--gold);">Page</a></td></tr>
       <tr><td>x86-float32-output-divergence</td><td>Same binary, same input, 6 CPU nodes, 6 output hashes; GPU kernel-path findings on T4 and RTX 3050</td><td><a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a></td></tr>
     </table>
 
@@ -253,7 +181,7 @@ ie_verify <span class="term-pass">PASS</span><span class="term-dim">  (hash=0x59
       <tr><td>SPCMP Determinism Report</td><td>Top-k / bottom-k convergence; documents the honest scalar-reduction limit</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP%20DETERMINISM%20Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
       <tr><td>Aerospace Verification Proof</td><td>40/40 assertions -- radiation bit-flip absorption, telemetry compression, GNC-loop determinism</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/SPCMP_Aerospace_Proof_Report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
       <tr><td>Scale Test Report</td><td>32 runs, 100k to 1B float32 elements, 8 data patterns -- zero failures</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/samayuktam_scale_report.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
-      <tr><td>Samayuktam Sorting Benchmark</td><td>CPU/GPU sort timing vs NumPy quicksort/mergesort/stable, up to 4.5&times; speedup</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/Processing%20benchmark.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
+      <tr><td>Samayuktam Sorting Benchmark</td><td>CPU/GPU sort timing vs NumPy quicksort/mergesort/stable; 4.3&ndash;4.8&times; on uniform and normal at 100M elements, up to 27&times; on duplicate_heavy_tail</td><td><a href="https://github.com/SwapnopamMitra/Samayuktam-Pilot/raw/main/SPCMP/Processing%20benchmark.pdf" target="_blank" rel="noopener" style="color:var(--gold);">PDF</a></td></tr>
     </table>
   </section>
 
@@ -264,7 +192,7 @@ ie_verify <span class="term-pass">PASS</span><span class="term-dim">  (hash=0x59
     <div class="casefile__cta" style="margin-top:0;">
       <a class="cta cta--main" href="pilot.html">Request Pilot Access</a>
       <a class="cta" href="#reports">Download Test Reports</a>
-      <a class="cta" href="#baseline">Run the Divergence Script</a>
+      <a class="cta" href="divergence.html">Run the Divergence Script</a>
     </div>
   </section>
 </main>

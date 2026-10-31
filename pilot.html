@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="css/film.css">
 <link rel="stylesheet" href="css/festive.css">
 <link rel="stylesheet" href="css/divergence.css">
+<link rel="stylesheet" href="css/pages.css">
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
@@ -26,6 +27,10 @@
     <a href="index.html#proof">The Problem</a>
     <a href="journey.html">Journey</a>
     <a href="specs.html">Specs</a>
+    <a href="spcmp.html">SPCMP</a>
+    <a href="integrity.html">Integrity</a>
+    <a href="divergence.html">Divergence</a>
+    <a href="model-drift.html">Model Drift</a>
     <a href="pilot.html" class="active">Pilot</a>
   </div>
 </nav>
@@ -44,7 +49,7 @@
       <h2>Before You Read the Terms</h2>
       <p>Your security team will review this program. Their review is better spent on evidence than on our pitch. Start with the divergence results.</p>
     </div>
-    <div class="gate glass reveal-image">
+    <div class="gate gate--3 glass reveal-image">
       <div class="gate__card gate__card--yes">
         <div class="gate__tag">Already reviewed</div>
         <h3 class="serif">Have you gone through the divergence results?</h3>
@@ -54,7 +59,7 @@
           <li>The hex view from each</li>
           <li>What your team challenged or could not reproduce</li>
         </ul>
-        <a class="btn btn-solid" href="mailto:swapnopam@samayuktam.com?subject=Divergence%20Results%20%E2%80%94%20Security%20Review%20Notes&amp;body=Organisation%3A%0ARole%3A%0A%0AEnvironments%20run%20(CPU%20model%20%2F%20Python%20version)%3A%0A%0AHex%20view%20per%20environment%3A%0A%0AObservations%20%2F%20objections%3A%0A%0AQuestions%20before%20we%20proceed%3A%0A">Email Your Thoughts</a>
+        <a class="btn btn-solid" href="mailto:swapnopam@samayuktam.com?subject=Divergence%20Results%20%3A%20Security%20Review%20Notes&amp;body=Organisation%3A%0ARole%3A%0A%0AEnvironments%20run%20(CPU%20model%20%2F%20Python%20version)%3A%0A%0AHex%20view%20per%20environment%3A%0A%0AObservations%20%2F%20objections%3A%0A%0AQuestions%20before%20we%20proceed%3A%0A">Email Your Thoughts</a>
       </div>
       <div class="gate__card gate__card--no">
         <div class="gate__tag">Not yet</div>
@@ -69,7 +74,23 @@
           <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Script</a>
           <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download</a>
         </div>
-        <p class="test-note">If your test machines return the same hash, they behaved identically on this broad test. Move to the <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener">x86 harness</a> to see the bit-level divergence.</p>
+        <p class="test-note">If your test machines return the same hash, they behaved identically on this broad test. Move to the <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener">x86 harness</a> to see the bit-level divergence. <a href="divergence.html">Full record</a>.</p>
+      </div>
+      <div class="gate__card gate__card--model">
+        <div class="gate__tag">The test &amp; CAGM</div>
+        <h3 class="serif">A matching loss is not proof. A matching hash is proof.</h3>
+        <p>Same script, same seed (42), four different environments. The final loss was identical on all four. The model weights were completely different.</p>
+        <p>CAGM is a fixed-point ML classifier that removes floating-point math from the training loop and emits a SHA-256 proof of the entire training trajectory. Run across the same four environments, every run produced the exact same proof.</p>
+        <ul>
+          <li>Run the 40-line PyTorch script on your own machines</li>
+          <li>Compare your weights SHA-256 against the four recorded</li>
+          <li>CAGM pilot tier is listed under the Evaluation Tiers below</li>
+        </ul>
+        <div class="repro-cta" style="margin-top:0;">
+          <a href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener" class="btn btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Script</a>
+          <a href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download</a>
+        </div>
+        <p class="test-note"><code>torch.use_deterministic_algorithms(True)</code> only guarantees run-to-run repeatability on the same machine. It does not fix cross-hardware drift. <a href="model-drift.html">Full results</a>.</p>
       </div>
     </div>
     <p class="gate__note reveal-text">Forward this page to whoever signs off on security. The terms below (hardware binding, online verification, pricing) are written for them to read after the results, not before.</p>
@@ -86,6 +107,7 @@
       <li><b>Hardware-Bound:</b> The binary is locked to your machine&rsquo;s MAC address and CPU ID.</li>
       <li><b>Online-Verified:</b> Every run performs an HTTPS round-trip to our licensing server to verify use count. No offline mode.</li>
       <li><b>Full Output:</b> Generates the actual Merkle roots, canonicalized <code>.pcmp</code> files, and CAGM SHA-256 training proofs.</li>
+      <li><b>Verification Profile:</b> Core Verification, or Authenticated Verification with a detached signed manifest. The signing key stays with you. <a href="integrity.html#profiles" style="color:var(--gold);">See both profiles</a>.</li>
     </ul>
   </section>
 
@@ -162,7 +184,7 @@
       <h2>Ready to start the handshake?</h2>
     </div>
     <div class="casefile__cta" style="margin-top:0;">
-      <a class="cta cta--main" href="mailto:swapnopam@samayuktam.com?subject=Pilot%20Request%20%E2%80%94%20Hardware%20Fingerprint&amp;body=Machine%20ID%3A%0AMAC%20Address%3A%0ACPU%20Model%3A%0ACPU%20Physical%20ID%3A%0A">Email Hardware Fingerprint</a>
+      <a class="cta cta--main" href="mailto:swapnopam@samayuktam.com?subject=Pilot%20Request%20%3A%20Hardware%20Fingerprint&amp;body=Machine%20ID%3A%0AMAC%20Address%3A%0ACPU%20Model%3A%0ACPU%20Physical%20ID%3A%0A">Email Hardware Fingerprint</a>
     </div>
   </section>
 </main>

@@ -2,6 +2,16 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // Flag active scrolling so hover effects do not fire (and freeze mid-way) while cards slide under a still cursor.
+  (() => {
+    let t;
+    window.addEventListener("scroll", () => {
+      document.documentElement.classList.add("is-scrolling");
+      clearTimeout(t);
+      t = setTimeout(() => document.documentElement.classList.remove("is-scrolling"), 140);
+    }, { passive: true });
+  })();
+
   const forceReveal = () => document.querySelectorAll(".reveal-text, .reveal-image")
     .forEach(el => el.classList.add("is-revealed"));
 

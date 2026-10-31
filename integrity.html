@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Layers of Integrity -- Samayuktam</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/film.css">
+<link rel="stylesheet" href="css/festive.css">
+<link rel="stylesheet" href="css/divergence.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/integrity.css">
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/terminal.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/film.js" defer></script>
+<script src="js/lightbox.js" defer></script>
+<script src="js/integrity.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+
+<nav class="site-nav">
+  <a class="brand" href="index.html" aria-label="Samayuktam - back to home page" title="Back to home">
+    <img src="assets/images/page_logo.png" alt="Samayuktam logo">
+    <span class="serif" style="font-weight:600;">Samayuktam</span>
+  </a>
+  <div class="links">
+    <a href="index.html#proof">The Problem</a>
+    <a href="journey.html">Journey</a>
+    <a href="specs.html">Specs</a>
+    <a href="spcmp.html">SPCMP</a>
+    <a href="integrity.html" class="active">Integrity</a>
+    <a href="divergence.html">Divergence</a>
+    <a href="model-drift.html">Model Drift</a>
+    <a href="pilot.html">Pilot</a>
+  </div>
+</nav>
+
+<main>
+  <section class="page-hero">
+    <div class="section-head reveal-text">
+      <h1>Three Layers of Integrity</h1>
+      <p>A common misconception in secure data pipelines is that a single hash solves all problems. It doesn&rsquo;t. To prove a file is authentic, you need to separate the logical content from the physical artifact.</p>
+    </div>
+    <p class="ig-callout reveal-text"><b>What SPCMP is for.</b> SPCMP gives a float32 dataset one canonical, reversible form with a built-in commitment to its content. Same data, same container. Altered data, failed verification.</p>
+    <div class="cta-row">
+      <a href="#layers" class="btn btn-solid">See the three layers &darr;</a>
+      <a href="#profiles" class="btn">Two profiles &darr;</a>
+      <a href="#tested" class="btn">What we tested &darr;</a>
+      <a href="#path" class="btn">Deployment path &darr;</a>
+    </div>
+  </section>
+
+  <section id="layers">
+    <div class="section-head reveal-text">
+      <h2>The Layers</h2>
+      <p>Each demo below is an illustration of behaviour we measured. Try the attacks.</p>
+    </div>
+
+    <article class="ig-layer glass reveal-image">
+      <span class="ig-tag">LAYER 1</span>
+      <div>
+        <h3 class="serif">Logical-Content Integrity</h3>
+        <p><b>SPCMP&rsquo;s content commitment</b>, built on SHA-256 Merkle hashing, detects any alteration of the decoded data: the float32 values and their original order.</p>
+        <p>If the decoded content is identical, the commitment passes. A change that touches only the compression layer, and leaves the data byte-for-byte the same, is not a change to the data.</p>
+        <p class="test-note"><b>Limit:</b> the commitment travels inside the file. Someone who can rewrite the file can recompute it. Layer 1 catches corruption and edits that leave the commitment alone. It does not say who made the file.</p>
+      </div>
+      <div class="ig-demo glass" id="ig1">
+        <div class="ig-demo__bar"><span>content check &middot; illustration</span><span>12 values shown</span></div>
+        <div class="ig-cells" id="ig1-cells"></div>
+        <div class="ig-bytes" id="ig1-bytes" aria-hidden="true"></div>
+        <div class="ig-seal ok" id="ig1-seal"><i></i><span>commitment matches</span></div>
+        <div class="ig-btns">
+          <button type="button" data-act="value">Change one value</button>
+          <button type="button" data-act="swap">Swap two positions</button>
+          <button type="button" data-act="frame">Flip a bit in the file</button>
+          <button type="button" data-act="forge">Rewrite file + commitment</button>
+          <button type="button" class="reset" id="ig1-reset">Reset</button>
+        </div>
+        <div class="ig-verdict" id="ig1-verdict" aria-live="polite"></div>
+      </div>
+    </article>
+
+    <article class="ig-layer glass reveal-image">
+      <span class="ig-tag">LAYER 2</span>
+      <div>
+        <h3 class="serif">Artifact Integrity &amp; Authenticity</h3>
+        <p>If your threat model requires the exact serialized bytes to be unchanged, or you need to know who produced the file, <b>sign the physical artifact</b>.</p>
+        <p>The producer&rsquo;s signing accessory takes a SHA-256 hash of the finished <code>.pcmp</code> file and signs it with Ed25519 into a detached manifest. The combined verifier checks the signature, the pinned key and the exact file hash <b>before it parses the file at all</b>, then runs the Layer 1 content check.</p>
+        <p>The private key stays with whoever is asserting provenance, protected by a passphrase or an HSM. Samayuktam never holds it.</p>
+        <p class="test-note"><b>Detached:</b> the signature lives in a separate manifest, so the <code>.pcmp</code> file itself is unchanged.</p>
+      </div>
+      <div class="ig-demo glass" id="ig2">
+        <div class="ig-demo__bar"><span>receiving verifier &middot; illustration</span><span>checked in this order</span></div>
+        <div class="ig-flow" id="ig2-flow"></div>
+        <div class="ig-btns">
+          <button type="button" data-act="genuine">Genuine file</button>
+          <button type="button" data-act="forged">Forged file, commitment recomputed</button>
+          <button type="button" data-act="frame">One bit flipped in the file</button>
+          <button type="button" data-act="replay">Old signed file replayed</button>
+          <button type="button" data-act="wrong">Authorised producer signs wrong data</button>
+        </div>
+        <div class="ig-verdict" id="ig2-verdict" aria-live="polite"></div>
+      </div>
+    </article>
+
+    <article class="ig-layer ig-layer--ext glass reveal-image">
+      <span class="ig-tag">LAYER 3 &middot; EXTERNAL</span>
+      <div>
+        <h3 class="serif">Execution Attestation</h3>
+        <p>A signed, verified file establishes <b>what the data is and who produced it</b>. It does not establish how it was generated.</p>
+        <p>Proving that a specific script ran on a specific machine requires hardware attestation or execution logs. Those sit outside the SPCMP protocol.</p>
+      </div>
+      <div class="ig-chips ig-pulse" style="padding:18px; border:1px dashed var(--line);">
+        <span>hardware attestation</span><span>execution logs</span><span>build provenance</span><span>business validation</span>
+      </div>
+    </article>
+  </section>
+
+  <section id="profiles">
+    <div class="section-head reveal-text">
+      <h2>Two Deployment Profiles</h2>
+      <p>Same core artifact. Choose how much authentication surrounds it. These are two selectable profiles, not two competing implementations.</p>
+    </div>
+    <div class="ch glass reveal-image" id="chain">
+      <div class="ch__ctrl">
+        <div class="ch__tabs" id="ch-profiles"><span class="ch__lbl">Profile</span>
+          <button type="button" class="env-tab active" data-p="core">Core Verification</button>
+          <button type="button" class="env-tab" data-p="auth">Authenticated Verification</button>
+        </div>
+        <div class="ig-btns" id="ch-threats" style="margin-top:0;"><span class="ch__lbl">Send it</span>
+          <button type="button" data-th="none">Clean run</button>
+          <button type="button" data-th="value">Change a value</button>
+          <button type="button" data-th="bit">Flip a bit in the file</button>
+          <button type="button" data-th="forge">Forge file + commitment</button>
+          <button type="button" data-th="key">Sign with another key</button>
+        </div>
+      </div>
+      <div class="ch-track" id="ch-track"><div class="ch-pk" id="ch-pk"></div></div>
+      <div class="ig-verdict" id="ch-banner" aria-live="polite"></div>
+    </div>
+
+    <div class="ledger-wrap reveal-text ig-compare">
+    <table class="ledger">
+      <tr><th></th><th>Core Verification</th><th>Authenticated Verification</th></tr>
+      <tr><td>Core SPCMP</td><td class="pass">Yes</td><td class="pass">Yes</td></tr>
+      <tr><td>Logical verification</td><td>Core verifier</td><td>Runs after authentication passes</td></tr>
+      <tr><td>Exact-byte authentication</td><td>No signature layer</td><td>SHA-256 digest + Ed25519 signature</td></tr>
+      <tr><td>Provenance across distribution</td><td>Depends on the surrounding trust model</td><td>Explicit signed-manifest verification</td></tr>
+      <tr><td>Integration burden</td><td>Lower</td><td>Key and manifest management</td></tr>
+    </table>
+    </div>
+
+    <div class="ig-best reveal-image">
+      <div class="ig-card glass"><h4>Best fit: Core Verification</h4><p>Clients who generate and verify SPCMP artifacts inside their own trusted environment, and need logical-integrity verification without adding a signing workflow.</p></div>
+      <div class="ig-card glass"><h4>Best fit: Authenticated Verification</h4><p>Clients who move artifacts across trust boundaries or need provenance, auditability and exact-byte integrity: cloud pipelines, AI artifact distribution, scientific data workflows.</p></div>
+    </div>
+    <p class="bench-note reveal-text" style="margin-top:18px;">The signing key belongs to the client, who is the one asserting the provenance of its own artifact. Samayuktam does not distribute its private signing key. Authenticated Verification does not replace Core Verification. It adds an authentication layer around the same core artifact, and a valid signature does not prove a computation was honest, which is why the content check still runs afterward.</p>
+  </section>
+
+  <section id="tested">
+    <div class="section-head reveal-text">
+      <h2>What We Tested</h2>
+      <p>We flipped every single bit of a small SPCMP file, one at a time, and asked the verifier about each copy.</p>
+    </div>
+    <div class="ig-stats reveal-text">
+      <div class="ig-stat"><b id="ig-tested">38,440</b><span>single-bit flips tested</span></div>
+      <div class="ig-stat ig-stat--ok"><b id="ig-rejected">38,430</b><span>rejected by the verifier</span></div>
+      <div class="ig-stat ig-stat--hit"><b id="ig-hits">10</b><span>accepted &middot; decoded content identical to the original</span></div>
+    </div>
+    <div class="ig-wall glass reveal-image">
+      <canvas id="ig-wall" aria-label="Wall of 38,440 dots, one per bit flip. 38,430 are rejected; 10 gold dots passed and decode to identical content."></canvas>
+      <div class="ig-wall__cap">
+        <span class="ig-keys"><span><i style="background:#7fbf92"></i>rejected</span><span><i style="background:#F2B04A"></i>accepted, content identical</span></span>
+        <span>Counts are measured. Dot positions are illustrative.</span>
+        <button type="button" id="ig-replay">Replay</button>
+      </div>
+    </div>
+
+    <ol class="ig-method reveal-text">
+      <li>Take a 1,000-element float32 file in SPCMP form (4,805 bytes).</li>
+      <li>Flip one bit. Run the verifier on the altered copy. Repeat for every bit of every byte.</li>
+      <li>Record every altered copy the verifier still accepts.</li>
+      <li>Decode each accepted copy and compare it with the original.</li>
+    </ol>
+
+    <p class="bench-note reveal-text" style="margin-top:20px;"><b style="color:var(--text);">Result.</b> 38,430 of 38,440 flips were rejected. The 10 that passed were bits inside the compression layer, and all 10 decoded to content byte-identical to the original. If the decoded content is identical, the commitment passes. That is the correct answer for Layer 1, and exactly why Layer 2 signs the file&rsquo;s exact bytes.</p>
+
+    <div class="ledger-wrap reveal-text">
+    <table class="ledger">
+      <tr><th>Test</th><th>Scope</th><th>Result</th></tr>
+      <tr><td>Change a value</td><td>SPCMP test file</td><td class="pass">Rejected</td></tr>
+      <tr><td>Swap two positions</td><td>SPCMP test file</td><td class="pass">Rejected</td></tr>
+      <tr><td>Hostile-artifact regression</td><td>Malformed and hostile test artifacts</td><td class="pass">15 of 15 rejected</td></tr>
+      <tr><td>Boundary cases</td><td>Empty input, single element, size boundaries</td><td class="pass">Passed</td></tr>
+      <tr><td>Flip every single bit</td><td>1,000-element float32 file, 4,805 bytes, 38,440 flips</td><td class="pass">38,430 rejected; 10 accepted, content identical</td></tr>
+    </table>
+    </div>
+
+    <h3 class="spec__sub reveal-text">Authenticated Verification campaign</h3>
+    <div class="ledger-wrap reveal-text">
+    <table class="ledger">
+      <tr><th>Test</th><th>Expected</th><th>Result</th></tr>
+      <tr><td>Original signed artifact (100,000 elements)</td><td>Accept</td><td class="pass">Accepted</td></tr>
+      <tr><td>Wrong public key</td><td>Reject</td><td class="pass">Rejected</td></tr>
+      <tr><td>Missing manifest</td><td>Reject</td><td class="pass">Rejected</td></tr>
+      <tr><td>Tampered file bytes, original manifest</td><td>Reject</td><td class="pass">Rejected</td></tr>
+      <tr><td>Altered signature</td><td>Reject</td><td class="pass">Rejected</td></tr>
+      <tr><td>Valid signature, invalid content commitment</td><td>Reject</td><td class="pass">Rejected at the content check</td></tr>
+      <tr><td>Original artifact after all tests</td><td>Accept</td><td class="pass">Accepted</td></tr>
+    </table>
+    </div>
+    <div class="ig-stats reveal-text" style="margin-top:18px;">
+      <div class="ig-stat ig-stat--plain"><b>22 / 22</b><span>regression checks passed</span></div>
+      <div class="ig-stat" style="grid-column: span 2;"><span style="margin:0;font-size:12.5px;line-height:1.65;color:var(--text-dim);letter-spacing:0;">The harness covers malformed, missing and corrupted manifests and signatures; wrong, missing and unreadable keys; truncated and corrupted files; altered structure; tampered commitments; and a check that the core verifier itself was left unmodified. A valid signature alone cannot make an invalid artifact acceptable.</span></div>
+    </div>
+    <aside class="test-note test-note--block reveal-text ig-limits">
+      <p><b>What this test does not show:</b> It covers one small file. Larger files have larger compressed regions and may contain more of the harmless kind. It does not test someone who can rewrite the file and its commitment, which is what Layer 2 is for. It does not test whether a computation ran correctly. Hostile-input resource exhaustion and legacy build rejection are still being audited.</p>
+    </aside>
+  </section>
+
+  <section id="stops">
+    <div class="section-head reveal-text">
+      <h2>What Each Layer Stops</h2>
+      <p>A file moving from a model-serving system to a risk platform, and what each control catches.</p>
+    </div>
+    <div class="ledger-wrap">
+    <table class="ledger ig-table">
+      <tr><th>Attack or failure</th><th>Layer 1 &middot; content commitment</th><th>Layer 2 &middot; signed artifact</th></tr>
+      <tr><td>A value or the original order is changed</td><td class="ig-yes">Detected</td><td class="ig-yes">Detected (file bytes change)</td></tr>
+      <tr><td>A bit changes in the compression layer, decoded data identical</td><td class="ig-maybe">May pass</td><td class="ig-yes">Detected (file bytes change)</td></tr>
+      <tr><td>File replaced by a forgery with a recomputed commitment</td><td class="ig-maybe">Passes</td><td class="ig-yes">Detected (no valid signature)</td></tr>
+      <tr><td>The signed manifest&rsquo;s digest is altered</td><td class="ig-maybe">Not necessarily</td><td class="ig-yes">Detected (signature fails)</td></tr>
+      <tr><td>An older, validly signed file is replayed</td><td class="ig-maybe">Passes</td><td class="ig-yes">Detected (release identifier in the signed manifest)</td></tr>
+      <tr><td>A trusted key signs outside its authorised scope</td><td class="ig-no">Not detected</td><td class="ig-no">Not detected by the signature alone; needs key scope and revocation policy</td></tr>
+      <tr><td>An authorised producer signs incorrect data</td><td class="ig-no">Not detected</td><td class="ig-no">Not detected; business validation</td></tr>
+      <tr><td>Wrong code ran, but the output is validly signed</td><td class="ig-no">Not detected</td><td class="ig-no">Not detected; execution attestation</td></tr>
+    </table>
+    </div>
+    <p class="test-note reveal-text" style="margin-top:18px;"><b>Assumptions:</b> Layer 1 binds both the values and their original order. Layer 2 signs a manifest that contains the exact file digest. The verifier pins the signing key independently, not from the file it is checking.</p>
+    <p class="bench-note reveal-text" style="margin-top:18px;">Cryptographic commitments establish the integrity of the data they cover. Signatures bind an artifact to a signing key and an authenticated statement about it. Neither establishes that the computation was correct or that the signer was authorised for this specific operation. A validly signed artifact can faithfully preserve an incorrect model output.</p>
+  </section>
+
+  <section id="path">
+    <div class="section-head reveal-text">
+      <h2>The Deployment Path</h2>
+      <p>Start where an artifact changes hands, not inside every live transaction. The example below is a bank moving a risk-model artifact between environments. Illustrative, not a statement of any customer&rsquo;s setup.</p>
+    </div>
+    <div class="ig-time">
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 1</span><h4>Data and computation</h4><p>Bank data, model, code and execution environment.</p></div>
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 2</span><h4>Canonicalize and commit</h4><p>SPCMP puts the data into its canonical form and computes the content commitment.</p></div>
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 3</span><h4>Finish the artifact</h4><p>The <code>.pcmp</code> file is finalized. Only now is it hashed, so the signature never has to cover a file that contains its own hash.</p></div>
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 4</span><h4>Authenticate the exact file</h4><p>A signing service backed by an HSM or key-management service signs the file&rsquo;s SHA-256 digest. The private key never leaves it.</p></div>
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 5</span><h4>Distribute file and signed manifest</h4><p>The manifest binds the digest to the profile and version, file length, content commitment, key ID, and a release identifier that blocks replay of older files.</p></div>
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 6</span><h4>Independent verification</h4><p>The bank&rsquo;s own verifier checks the signature and exact file hash first, then runs the SPCMP content and structure checks.</p></div>
+      <div class="ig-step ig-step--stop"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 7</span><h4>Accept or quarantine</h4><p>Accept only if every required check passes. Otherwise reject, quarantine and log. There is no silent fallback to the weaker check.</p></div>
+    </div>
+
+    <h3 class="spec__sub reveal-text">Controls the receiving organisation still owns</h3>
+    <div class="ig-grid4 reveal-image">
+      <div class="ig-card glass"><h4>Key custody</h4><p>Signing keys stay apart from whoever produces the file. The bank pins trusted public keys, defines what each key may sign, and runs rotation and revocation.</p></div>
+      <div class="ig-card glass"><h4>Signed manifest</h4><p>A defined, canonically encoded manifest, so the exact signed bytes are unambiguous.</p></div>
+      <div class="ig-card glass"><h4>Replay and rollback</h4><p>A valid signature does not mean newest. The signed manifest carries a release identifier the verifier checks, so an old file cannot replace a new one.</p></div>
+      <div class="ig-card glass"><h4>Audit evidence</h4><p>Digest, commitment, key ID, verifier version, result, time and release ID go to tamper-evident storage, with duties separated.</p></div>
+    </div>
+  </section>
+
+  <section id="sectors">
+    <div class="section-head reveal-text">
+      <h2>Where It Fits</h2>
+      <p>Anywhere a float32 artifact changes hands and someone downstream has to trust it without redoing the work.</p>
+    </div>
+    <div class="ig-grid2 reveal-image">
+      <div class="ig-card ig-sector glass"><h4>Banking &amp; capital markets</h4><dl>
+        <dt>The handoff</dt><dd>Models and checkpoints moving between environments; risk computations recorded for audit.</dd>
+        <dt>What SPCMP adds</dt><dd>A canonical form and a content commitment the receiving system checks on its own.</dd>
+        <dt>Stays outside</dt><dd>Key custody, release approval, proof the computation ran as claimed.</dd></dl></div>
+      <div class="ig-card ig-sector glass"><h4>Healthcare &amp; clinical ML</h4><dl>
+        <dt>The handoff</dt><dd>A validated model moving from development into the clinical environment.</dd>
+        <dt>What SPCMP adds</dt><dd>Evidence that the model running today is the one that was validated.</dd>
+        <dt>Stays outside</dt><dd>Clinical validation and regulatory approval.</dd></dl></div>
+      <div class="ig-card ig-sector glass"><h4>Insurance &amp; actuarial</h4><dl>
+        <dt>The handoff</dt><dd>Pricing and reserving inputs and outputs passed between teams and vendors.</dd>
+        <dt>What SPCMP adds</dt><dd>Same data, same container, and any change detectable at the receiving end.</dd>
+        <dt>Stays outside</dt><dd>Model governance and sign-off.</dd></dl></div>
+      <div class="ig-card ig-sector glass"><h4>Science &amp; engineering</h4><dl>
+        <dt>The handoff</dt><dd>Simulation output moving between clusters, labs and archives.</dd>
+        <dt>What SPCMP adds</dt><dd>A form that is identical across machines and checkable on retrieval.</dd>
+        <dt>Stays outside</dt><dd>Scientific validity of the result.</dd></dl></div>
+    </div>
+    <p class="bench-note reveal-text" style="margin-top:18px;">These are deployment patterns, not certifications. SPCMP alone does not supply every control a regulated environment requires.</p>
+  </section>
+
+  <section id="cta">
+    <div class="section-head reveal-text">
+      <h2>Test it at one boundary</h2>
+      <p>A pilot is one artifact handoff and one verifier. Start there.</p>
+    </div>
+    <div class="casefile__cta" style="margin-top:0;">
+      <a class="cta cta--main" href="pilot.html">Request Pilot Access</a>
+      <a class="cta" href="spcmp.html">SPCMP specs</a>
+      <a class="cta" href="divergence.html">Divergence record</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>&copy; 2026 Samayuktam. Solo-built.</span>
+  <div>
+    <a href="https://github.com/SwapnopamMitra" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="mailto:swapnopam@samayuktam.com">Email</a>
+  </div>
+</footer>
+
+</body>
+</html>
