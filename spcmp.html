@@ -45,7 +45,8 @@
   <section class="page-hero">
     <div class="section-head reveal-text">
       <h1>SPCMP</h1>
-      <p>Your float32 data compresses. SPCMP also gives you a Merkle root. Same size reduction, plus tamper-evidence.</p>
+      <p>Your float32 data gets compressed. SPCMP also gives it a canonical form, a reversible record, and a Merkle commitment.</p>
+      <p style="margin-top:10px;color:var(--gold);">Compression with logical integrity built in.</p>
     </div>
     <div class="cta-row">
       <a href="mailto:swapnopam@samayuktam.com?subject=SPCMP%20Pilot%20Request" class="btn btn-solid">Request SPCMP</a>
@@ -63,17 +64,17 @@
     </div>
     <div class="spec reveal-text">
       <div class="spec__row"><span class="spec__label">The Problem</span><div>
-        <p><b>Is this the same data?</b> Float32 results differ across hardware, and one dataset can be stored in many byte forms: signed zeros, NaN payloads, different orderings. Hashing the bytes does not answer the question.</p>
-        <p style="margin-top:12px;"><b>Has it changed since?</b> Compression is one-way, so nothing proves what comes out is what went in. And encryption without authentication can hide tampering until the data is read.</p>
+        <p><b>Is this the same data?</b> Float32 results can differ across execution paths and schedules, and identical values can have different bytes: signed zeros, NaN payloads, different orderings. A hash of the raw bytes cannot, by itself, tell you whether two files hold the same data.</p>
+        <p style="margin-top:12px;"><b>Has it changed?</b> Compression alone does not prove the decoded data is intact, and encryption without authentication does not guarantee the ciphertext is untampered.</p>
       </div></div>
-      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP gives a float32 dataset one canonical, reversible form with a built-in commitment to its content. Same data, same container. Altered data, failed verification.</p></div>
+      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP gives a float32 dataset a canonical form, a reversible record of its original order, and a built-in commitment to its content. Same content, same canonical form. Altered content, failed verification.</p></div>
       <ul class="spec__list">
-        <li><b>Canonical:</b> one deterministic form per dataset, identical across machines. The cross-hardware runs are in the Test Reports.</li>
-        <li><b>Tamper-evident:</b> any change to the decoded data fails verification. We flipped every bit of a 1,000-element file: 38,430 of 38,440 flips were rejected, and the 10 that passed decode to identical content. <a href="integrity.html#tested" style="color:var(--gold);">The test &rarr;</a></li>
-        <li><b>Reversible:</b> <code>unsort</code> reconstructs the exact original bytes.</li>
-        <li><b>Not a speed tax:</b> at 100 million elements SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs: 4.65x and 4.40x on uniform and normal data (CPU run), 4.77x and 4.31x (GPU run), up to 27.09x on duplicate-heavy data. It is slower on subnormals and sawtooth, and below roughly 100,000 elements. These times include SPCMP&rsquo;s compression and its unsort record, which the other sorts do not do. Charts below.</li>
+        <li><b>Canonical:</b> one deterministic form per dataset, regardless of the machine. Cross-hardware results are in the Test Reports.</li>
+        <li><b>Tamper-evident:</b> changes to the committed content fail verification. In an exhaustive bit-flip test on a 1,000-element file, 38,430 of 38,440 flips were rejected. The other 10 decoded to identical content. <a href="integrity.html#tested" style="color:var(--gold);">See the test &rarr;</a></li>
+        <li><b>Reversible:</b> <code>unsort</code> restores the exact original bytes, order included.</li>
+        <li><b>Not a speed tax:</b> at 100 million elements, SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs. On uniform and normal data: 4.65&times; and 4.40&times; (CPU run), 4.77&times; and 4.31&times; (GPU run), and up to 27.09&times; on duplicate-heavy data. It is slower on subnormal and sawtooth data, and below roughly 100,000 elements. SPCMP&rsquo;s timings include compression and the unsort record, which the other sorts do not produce. Charts below.</li>
       </ul>
-      <p class="test-note" style="margin-top:14px;"><b>Where it stops:</b> the commitment lives inside the file, so on its own it cannot say who made the file. Authenticated Verification adds that: a detached signature over the finished file, checked before anything else. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity</a>.</p>
+      <p class="test-note" style="margin-top:14px;"><b>Where SPCMP stops:</b> the Merkle commitment establishes what the data contains. It does not establish who created the file. Authenticated Verification does: a detached digital signature binds the exact finished file to an authorized signing key, and is checked before the file is trusted. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity &rarr;</a></p>
     </div>
 
     <h3 class="spec__sub reveal-text">The 4 Commands</h3>

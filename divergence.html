@@ -43,12 +43,12 @@
   <section class="page-hero">
     <div class="section-head reveal-text">
       <h1>Float Divergence</h1>
-      <p>NVIDIA, Intel, AMD, and Microsoft have each confirmed cross-hardware floating-point divergence is expected behavior at their layer. None owns it. None is fixing it.</p>
+      <p>IEEE 754 does not guarantee bit-identical results across platforms, and <a href="https://docs.nvidia.com/cuda/floating-point/index.html" target="_blank" rel="noopener" style="color:var(--gold);">NVIDIA&rsquo;s own CUDA documentation</a> says so. The records below show what that looks like in practice.</p>
     </div>
     <div class="cta-row">
       <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Divergence Script</a>
       <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download the script</a>
-      <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" class="btn">x86 harness &rarr;</a>
+      <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" class="btn">GPU harness &rarr;</a>
     </div>
     <div class="cmd-chip mono" aria-label="Command to run the script">
       <span class="prompt">$</span><code>python3 prove_divergence.py</code>
@@ -61,47 +61,32 @@
       <h2>The Proof</h2>
     </div>
 
-    <figure class="figure glass reveal-image" style="max-width:480px;">
-      <img src="assets/images/Comp_graphic/comparison.png" alt="Cross-hardware hash verification table" class="proof-image" loading="lazy" decoding="async" data-zoom>
-      <figcaption>Pictorial representation -- see the record below for the actual run data. Click to inspect.</figcaption>
-    </figure>
-
     <div class="reveal-text" style="margin-top:36px;">
       <h3 class="serif" style="font-size:18px; margin-bottom:6px;">The Record</h3>
       <p style="color:var(--text-dim); font-size:14px; max-width:60ch; margin-bottom:18px;">
-        Independent harness, same binary, same input, run across real hardware. Three separate findings. The first two are reproducible from
-        <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" style="color:var(--gold);">the divergence-verifier repo</a>;
-        the third you can run yourself in under a minute from
+        Two findings, both reproducible. The GPU finding reproduces from
+        <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" style="color:var(--gold);">the GPU harness repo</a>;
+        the script finding runs in under a minute from
         <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" style="color:var(--gold);">the float-divergence-script repo</a>.
       </p>
 
-      <div class="doc-subhead mono" id="x86" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">CPU FINDING -- hardware-dependent divergence</div>
+      <div class="doc-subhead mono" id="gpu" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">GPU FINDING: path-dependent and scheduling-dependent divergence</div>
+      <p style="color:var(--text-dim); font-size:14px; max-width:62ch; margin-bottom:14px;">The same 1,000,000-element float32 corpus, run on a local NVIDIA RTX 3050 and two Google Colab Tesla T4 instances. Source code and compiler flags were identical, compiled independently on each machine.</p>
       <div class="ledger-wrap">
-      <table class="ledger" style="margin-bottom:28px;">
-        <tr><th>Node</th><th>CPU</th><th>Output hash</th></tr>
-        <tr><td>Prime</td><td>Intel i5-12450HX</td><td class="mono">b266807160a9ee69…</td></tr>
-        <tr><td>0e4e583760c2</td><td>Intel Xeon @ 2.20GHz</td><td class="mono">8f172ee242809dbf…</td></tr>
-        <tr><td>6e258a114c61</td><td>Intel Xeon @ 2.00GHz</td><td class="mono">7989a6b20cc566cd…</td></tr>
-        <tr><td>c2e68d2ae4f6</td><td>AMD EPYC 7B13</td><td class="mono">44b36c0f3a01cc59…</td></tr>
-        <tr><td>project40c8…</td><td>AMD EPYC 7B13</td><td class="mono">a1b49047410b2620…</td></tr>
-        <tr><td>second_pc</td><td>Intel i7-1255U</td><td class="mono">689c2e49eb09ec8b…</td></tr>
+      <table class="ledger">
+        <tr><th>Kernel</th><th>Compiler flags</th><th>Tesla T4 (sm_75)</th><th>RTX 3050 (sm_86)</th></tr>
+        <tr><td>fma_default</td><td class="mono">-O2 -DUSE_FMA</td><td class="mono pass">5b4f9db9…</td><td class="mono pass">5b4f9db9…</td></tr>
+        <tr><td>fma_no_fma</td><td class="mono">-O2 --fmad=false</td><td class="mono">80d7301c…</td><td class="mono">80d7301c…</td></tr>
+        <tr><td>fast_on (fast <code>__expf</code>)</td><td class="mono">-O2 -DUSE_FAST</td><td class="mono">743d2d5f…</td><td class="mono">743d2d5f…</td></tr>
+        <tr><td>fast_off (accurate <code>expf</code>)</td><td class="mono">-O2</td><td class="mono">cbe5cea0…</td><td class="mono">cbe5cea0…</td></tr>
+        <tr><td>reduction_tree</td><td class="mono">-DTREE_REDUCTION</td><td class="mono">37d5c6b3…</td><td class="mono">37d5c6b3…</td></tr>
+        <tr><td>reduction_atomic</td><td class="mono">-DATOMIC_REDUCTION</td><td class="mono">10 unique hashes in 10 runs</td><td class="mono">9 unique hashes in 10 runs</td></tr>
       </table>
       </div>
-      <p style="color:var(--text-faint); font-size:13px; margin-top:-16px; margin-bottom:28px;">Binary hash and input hash identical across all six nodes. Six different output hashes.</p>
+      <p style="color:var(--text-faint); font-size:13px; margin-top:12px; margin-bottom:12px;">The deterministic kernels produce bit-identical output on both GPU architectures. Changing a compiler flag on the same GPU changes the output. Atomic reduction is non-deterministic from run to run at this size, while tree reduction was deterministic in every current run. The fast and accurate rows compare <code>__expf</code> against <code>expf</code>, so they are not an isolated flush-to-zero toggle. These are expected, documented behaviors of compiler flags and thread scheduling. The point is that output depends on the build and the schedule, not on a defect in either GPU.</p>
+      <p style="color:var(--text-faint); font-size:13px; margin-bottom:28px;">Full manifests and hash logs are in the <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" style="color:var(--gold);">GPU harness repo</a>. A CPU result previously published from this harness was retracted on November 2, 2026 after a fault in the harness was found. See the correction notice in the repository.</p>
 
-      <div class="doc-subhead mono" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">GPU FINDING -- path-dependent divergence</div>
-      <table class="ledger">
-        <tr><th>Kernel</th><th>Tesla T4 (sm_75)</th><th>RTX 3050 (sm_86)</th></tr>
-        <tr><td>fma_on</td><td class="mono pass">9abc1b84…</td><td class="mono pass">9abc1b84…</td></tr>
-        <tr><td>fma_off</td><td class="mono">c0d12da3…</td><td class="mono">c0d12da3…</td></tr>
-        <tr><td>ftz_on</td><td class="mono">8a792baa…</td><td class="mono">8a792baa…</td></tr>
-        <tr><td>ftz_off</td><td class="mono">0accc3bb…</td><td class="mono">0accc3bb…</td></tr>
-        <tr><td>red_tree</td><td class="mono">a2c70538…</td><td class="mono">a2c70538…</td></tr>
-        <tr><td>red_atomic</td><td class="mono">a2c70538…</td><td class="mono">a2c70538…</td></tr>
-      </table>
-      <p style="color:var(--text-faint); font-size:13px; margin-top:12px; margin-bottom:28px;">Same kernel across both architectures: identical output. Different kernels on the same GPU: different output. The divergence source is the execution path, not the hardware.</p>
-
-      <div class="doc-subhead mono" id="script" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">SCRIPT FINDING -- one Python file, five environments, three answers</div>
+      <div class="doc-subhead mono" id="script" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">SCRIPT FINDING: one Python file, five environments, three answers</div>
       <div class="ledger-wrap reveal-text">
       <table class="ledger ledger--stagger" id="div-table">
         <tr><th>Environment</th><th>CPU</th><th>Python</th><th>Sorted-sum</th><th>Hex view</th><th>Result</th></tr>
@@ -112,7 +97,7 @@
         <tr data-g="C"><td>Colab CPU</td><td>AMD EPYC 7B12</td><td class="mono">3.13.16</td><td class="mono">2191.25390625</td><td class="mono">10f40845</td><td><span class="grp" data-g="C"><i></i>C</span></td></tr>
       </table>
       </div>
-      <p style="color:var(--text-faint); font-size:13px; margin-top:12px;">Same script, five environments, three different sums. An Intel Xeon and an AMD EPYC agree with each other. Two Intel Xeons do not. The CPU label does not tell you which answer you will get.</p>
+      <p style="color:var(--text-faint); font-size:13px; margin-top:12px;">Same script, five environments, three sums. An Intel Xeon and an AMD EPYC agree; two Intel Xeons do not. The CPU vendor does not predict the result.</p>
 
       <div class="spread glass reveal-image" aria-label="The three sorted-sum results plotted on one line, 2190.0 to 2191.25390625">
         <div class="spread__cap"><span><b>Spread</b> &middot; one sum, three landing points</span><span>&Delta; 1.25390625 between lowest and highest</span></div>
@@ -156,7 +141,7 @@
 
         <aside class="test-note test-note--block">
           <h3 class="serif">What if my machines match?</h3>
-          <p>If your hex view matches one of the results (A, B, or C) above, those machines behaved identically on this test. That does not prove they share identical hardware (as seen by the Intel and AMD results in Result C). To see the divergence at the binary level on identical environments, run the six-node harness in the <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener">x86-float32-output-divergence repo</a>.</p>
+          <p>If your hex view matches one of the results (A, B, or C) above, those machines behaved identically on this test. That does not prove your fleet is safe, and it does not mean the hardware is the same: Result C contains both an Intel and an AMD chip. This test does not isolate the cause. For path-dependent divergence at the binary level on GPUs (FMA versus non-FMA, fast-math versus accurate library, and atomic scheduling), run the <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener">GPU harness</a>.</p>
         </aside>
       </div>
     </div>
@@ -183,7 +168,7 @@
     <div class="spec reveal-text">
       <div class="spec__row"><span class="spec__label">The Test</span><p><code>prove_divergence.py</code> prints the host CPU model and Python version, runs a sorting-then-summing experiment, and reports the sorted-sum with its hex view.</p></div>
       <div class="spec__row"><span class="spec__label">The Result</span><p>Five environments produced three different sums, spread across 1.25390625. An Intel Xeon and an AMD EPYC agree; two Intel Xeons disagree. The vendor on the chip does not predict the answer.</p></div>
-      <div class="spec__row"><span class="spec__label">Not Claimed</span><p>The script does not isolate the cause. CPU instruction set, library build and interpreter version are all uncontrolled across these runs (Python 3.12.3, 3.13.7 and 3.13.16 appear). The script prints the Python version so you can compare like with like. Run it on your own fleet; that is the test that matters.</p></div>
+      <div class="spec__row"><span class="spec__label">Not Claimed</span><p>The script does not isolate the cause. CPU instruction set, library build and interpreter version are all uncontrolled across these runs (Python 3.12.3, 3.13.7 and 3.13.16 appear). Results A and C share Python 3.13.16 and still differ, so the interpreter alone does not explain the spread. The script prints the Python version so you can compare like with like. Run it on your own fleet; that is the test that matters.</p></div>
     </div>
 
     
@@ -223,7 +208,7 @@ HARDWARE &amp; MEMORY TELEMETRY
       <tr><th>Source</th><th>Scope</th><th>Link</th></tr>
       <tr><td>float-divergence-script</td><td>Sorted-sum experiment, 5 environments, 3 distinct results. Runs anywhere Python runs.</td><td><a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a> &middot; <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" style="color:var(--gold);">Script</a></td></tr>
       <tr><td>prove-model-drift</td><td>Same PyTorch script, same seed, 4 environments: identical final loss, 4 different weights hashes</td><td><a href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a> &middot; <a href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py" style="color:var(--gold);">Script</a> &middot; <a href="model-drift.html" style="color:var(--gold);">Page</a></td></tr>
-      <tr><td>x86-float32-output-divergence</td><td>Same binary, same input, 6 CPU nodes, 6 output hashes; GPU kernel-path findings on T4 and RTX 3050</td><td><a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a></td></tr>
+      <tr><td>gpu-float32-divergence</td><td>GPU harness: FMA, fast-math and atomic-reduction divergence on Tesla T4 and RTX 3050, 1,000,000-element corpus</td><td><a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a></td></tr>
     </table>
   </section>
 

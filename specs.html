@@ -17,7 +17,6 @@
 <script src="js/film.js" defer></script>
 <script src="js/lightbox.js" defer></script>
 <script src="js/divergence.js" defer></script>
-<script src="js/bench.js" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -43,6 +42,10 @@
       <h1>The Specifications</h1>
       <p>The architecture and math behind the canonicalization layer.</p>
     </div>
+    <div class="repro-cta reveal-text">
+      <a href="spcmp.html" class="btn btn-solid">SPCMP: container, benchmarks, verification &rarr;</a>
+      <a href="integrity.html" class="btn">Three layers of integrity &rarr;</a>
+    </div>
   </section>
 
   <section id="baseline" style="padding-top:0;border-top:none;">
@@ -52,56 +55,19 @@
     </div>
     <div class="spec reveal-text">
       <div class="spec__row"><span class="spec__label">The Result</span><p>Five environments produced three different sums, spread across 1.25390625. An Intel Xeon and an AMD EPYC agree; two Intel Xeons disagree. The vendor on the chip does not predict the answer.</p></div>
+      <div class="spec__row"><span class="spec__label">If Yours Match</span><p>Matching hashes mean the two machines behaved identically on this test. They do not prove your fleet is safe, and they do not mean the hardware is the same: Result C contains both an Intel and an AMD chip. This test does not isolate the cause. For path-dependent divergence on GPUs, run the <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" style="color:var(--gold);">GPU harness</a>.</p></div>
     </div>
     <div class="repro-cta reveal-text">
       <a href="divergence.html" class="btn btn-solid">Full divergence record &rarr;</a>
       <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Divergence Script</a>
       <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download the script</a>
-    </div>
-  </section>
-
-  <section id="spcmp">
-    <div class="section-head reveal-text">
-      <h2>2. SPCMP (Float32 Container &amp; Canonicalization)</h2>
-    </div>
-    <div class="spec reveal-text">
-      <div class="spec__row"><span class="spec__label">The Problem</span><div>
-        <p><b>Is this the same data?</b> Float32 results differ across hardware, and one dataset can be stored in many byte forms: signed zeros, NaN payloads, different orderings. Hashing the bytes does not answer the question.</p>
-        <p style="margin-top:12px;"><b>Has it changed since?</b> Compression is one-way, so nothing proves what comes out is what went in. And encryption without authentication can hide tampering until the data is read.</p>
-      </div></div>
-      <div class="spec__row"><span class="spec__label">The Solution</span><p>SPCMP gives a float32 dataset one canonical, reversible form with a built-in commitment to its content. Same data, same container. Altered data, failed verification.</p></div>
-      <ul class="spec__list">
-        <li><b>Canonical:</b> one deterministic form per dataset, identical across machines. The cross-hardware runs are in the Test Reports.</li>
-        <li><b>Tamper-evident:</b> any change to the decoded data fails verification. We flipped every bit of a 1,000-element file: 38,430 of 38,440 flips were rejected, and the 10 that passed decode to identical content. <a href="integrity.html#tested" style="color:var(--gold);">The test &rarr;</a></li>
-        <li><b>Reversible:</b> <code>unsort</code> reconstructs the exact original bytes.</li>
-        <li><b>Not a speed tax:</b> at 100 million elements SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs: 4.65x and 4.40x on uniform and normal data (CPU run), 4.77x and 4.31x (GPU run), up to 27.09x on duplicate-heavy data. It is slower on subnormals and sawtooth, and below roughly 100,000 elements. These times include SPCMP&rsquo;s compression and its unsort record, which the other sorts do not do. Charts below.</li>
-      </ul>
-      <p class="test-note" style="margin-top:14px;"><b>Where it stops:</b> the commitment lives inside the file, so on its own it cannot say who made the file. Authenticated Verification adds that: a detached signature over the finished file, checked before anything else. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity</a>.</p>
-    </div>
-    <h3 class="spec__sub reveal-text" id="benchmarks">Performance Benchmarks</h3>
-    <p class="bench-note reveal-text">Reversibility and cryptographic proof should not cost you speed. We benchmarked SPCMP against numpy quicksort, mergesort, heapsort and stable, C++ <code>std::sort</code>, and Python <code>sorted()</code> across sizes from 1,000 to 100,000,000 elements and 20 dataset types. Times are best-of-N; speedup is numpy quicksort time divided by SPCMP-reported time. SPCMP&rsquo;s time covers three jobs: sorting, compression and building the unsort record. The other algorithms only sort. At 1,000 elements SPCMP takes roughly 90 to 270 &micro;s on both runs, against about 3 &micro;s for numpy quicksort, so numpy wins there. Against numpy quicksort the crossover sits around 100,000 to 1,000,000 elements on the CPU run (11 of 20 types faster at 100,000, 17 of 20 at 1,000,000) and around 1,000,000 to 10,000,000 elements on the GPU run (6 of 20 at 100,000, 12 of 20 at 1,000,000, 18 of 20 at 10,000,000).</p>
-    <div class="bench__tabs" role="tablist" aria-label="Benchmark run">
-      <button type="button" class="env-tab" data-bench-dev="gpu">GPU run</button>
-      <button type="button" class="env-tab" data-bench-dev="cpu">CPU run</button>
-      <span class="bench__who" data-dev-label></span>
-    </div>
-    <div class="deck reveal-image" id="deck" tabindex="0" role="group" aria-label="Benchmark charts. Hover or focus to spread the deck, then click a chart to inspect it." data-n="3">
-        <figure class="deck__card" style="--i:0"><img data-zoom data-group="bench" data-title="Throughput scaling" data-gpu="assets/speed_results/throughput_scaling_gpu.png" data-cpu="assets/speed_results/throughput_scaling_cpu.png" data-cap-gpu="GPU run (RTX 3050 6GB), average throughput. SPCMP is lowest of all at 1,000 and 10,000 elements and passes std::sort, numpy mergesort and stable between 100,000 and 1,000,000. numpy quicksort and heapsort stay ahead until between 1,000,000 and 10,000,000 elements; from 10,000,000 SPCMP is above every other algorithm and keeps rising to 100,000,000." data-cap-cpu="CPU run, average throughput. SPCMP is lowest of all at 1,000 and 10,000 elements and passes std::sort, numpy mergesort and stable by 100,000. numpy quicksort and heapsort stay ahead until between 1,000,000 and 10,000,000 elements; from 10,000,000 SPCMP is above every other algorithm. It peaks at 10,000,000 and is lower at 100,000,000." src="assets/speed_results/throughput_scaling_gpu.png" alt="Throughput scaling" loading="lazy" decoding="async"><figcaption>Throughput scaling</figcaption></figure>
-        <figure class="deck__card" style="--i:1"><img data-zoom data-group="bench" data-title="Speedup by dataset type" data-gpu="assets/speed_results/speedup_ranking_gpu.png" data-cpu="assets/speed_results/speedup_ranking_cpu.png" data-cap-gpu="GPU run. Averaged across all sizes, including the small sizes where SPCMP loses: faster than numpy quicksort on 16 of 20 types. Top: duplicate_heavy_tail 17.09x, sorted_ascending 10.97x, sorted_descending 6.02x; normal 2.19x, uniform_random 2.18x. Below 1.0x: clustered 0.86x, few_unique 0.78x, sawtooth 0.77x, subnormals 0.13x." data-cap-cpu="CPU run. Averaged across all sizes, including the small sizes where SPCMP loses: faster than numpy quicksort on 18 of 20 types. Top: duplicate_heavy_tail 17.04x, sorted_ascending 11.73x, sorted_descending 5.85x; uniform_random 2.53x, normal 2.26x. Below 1.0x: few_unique 0.50x, subnormals 0.22x." src="assets/speed_results/speedup_ranking_gpu.png" alt="Speedup by dataset type" loading="lazy" decoding="async"><figcaption>Speedup by dataset type</figcaption></figure>
-        <figure class="deck__card" style="--i:2"><img data-zoom data-group="bench" data-title="Speedup heatmap" data-gpu="assets/speed_results/speedup_heatmap_gpu.png" data-cpu="assets/speed_results/speedup_heatmap_cpu.png" data-cap-gpu="Values above 1.0x mean SPCMP is faster than numpy quicksort; the colour scale starts at 0x, so low values above 1.0x also look red. At 1,000 elements SPCMP is slower on 15 of the 17 types that registered a time. It is faster on 4 of 20 types at 10,000, 6 at 100,000, 12 at 1,000,000, and 18 at both 10,000,000 and 100,000,000. At 100,000,000 it reaches 4.77x and 4.31x on uniform and normal data and 25.52x on duplicate_heavy_tail; it is slower on sawtooth (0.77x) and subnormals (0.37x)." data-cap-cpu="Values above 1.0x mean SPCMP is faster than numpy quicksort; the colour scale starts at 0x, so low values above 1.0x also look red. At 1,000 elements SPCMP is slower on 15 of the 16 types that registered a time. It is faster on 4 of 20 types at 10,000, 11 at 100,000, 17 at 1,000,000, and 18 at both 10,000,000 and 100,000,000. At 100,000,000 it reaches 4.65x and 4.40x on uniform and normal data and 27.09x on duplicate_heavy_tail; it is slower on sawtooth (0.50x) and subnormals (0.12x)." src="assets/speed_results/speedup_heatmap_gpu.png" alt="Speedup heatmap" loading="lazy" decoding="async"><figcaption>Speedup heatmap</figcaption></figure>
-      </div>
-    <p class="deck__hint reveal-text">Hover to spread the deck. Click a chart to inspect it, then use the arrow keys to move through them. The run toggle above switches every chart.</p>
-    <div class="repro-cta reveal-text">
-      <a href="spcmp.html" class="btn btn-solid">SPCMP specs and verification &rarr;</a>
-      <a href="integrity.html" class="btn">Three layers of integrity &rarr;</a>
-      <a href="spcmp.html#scale" class="btn">Watch it scale &rarr;</a>
-      <a href="spcmp.html#simulation" class="btn">Run the speed simulation &rarr;</a>
+      <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" class="btn">GPU harness &rarr;</a>
     </div>
   </section>
 
   <section id="cagm">
     <div class="section-head reveal-text">
-      <h2>3. CAGM (Deterministic ML Training)</h2>
+      <h2>2. CAGM (Deterministic ML Training)</h2>
     </div>
     <div class="spec reveal-text">
       <div class="spec__row"><span class="spec__label">The Problem</span><p>Standard ML training pipelines rely on floating-point math, meaning the exact same dataset and hyperparameters will produce different model weights depending on the GPU or CPU used.</p></div>
@@ -112,37 +78,16 @@
         <li><b>Output Contract:</b> Strict stdout output: <code>accuracy</code>, <code>proof</code>, and <code>ie_verify</code>.</li>
       </ul>
     </div>
-
-    <div class="terminal glass reveal-image" style="margin-top:8px;">
-      <div class="terminal-bar"><span class="terminal-title">./cagm</span></div>
-      <pre class="terminal-body"><span class="term-dim">$ </span><span class="term-cmd">./cagm diabetes_cagm_ready.csv --hidden 64 --epochs 100 --batch 64 --lr 0.005</span>
-<span class="term-dim">License OK, server check: </span><span class="term-pass">PASS</span><span class="term-dim"> | uses remaining: </span><span class="term-ok">15</span>
-<span class="term-dim">Loaded: </span>diabetes_cagm_ready.csv<span class="term-dim">  rows=768  features=8  classes=2</span>
-<span class="term-dim">Early stopping at epoch 29 (best=9, acc=0.8333)</span>
-accuracy  <span class="term-ok">0.785156</span>
-proof     <span class="term-warn">f8e66dd34cb782bf090211c6c63c0342999fe4f1cf5c8c55b54f532e8071c975</span>
-ie_verify <span class="term-pass">PASS</span><span class="term-dim">  (hash=0x59E4A8B7)</span></pre>
-    </div>
-
-    <h3 class="spec__sub reveal-text">Cross-Device Proof</h3>
-    <table class="ledger reveal-text">
-      <tr><th>Machine</th><th>Proof hash (HAM10000_metadata &middot; cagm_cpu, truncated)</th></tr>
-      <tr><td>Intel Xeon (CPU)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
-      <tr><td>AMD EPYC (CPU)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
-      <tr><td>NVIDIA T4 (GPU)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
-      <tr><td>Google TPU (Host)</td><td><code>ee069f064636c442&hellip;</code></td></tr>
-    </table>
-    <div class="prints prints--single">
-      <figure class="print glass reveal-image">
-        <img loading="lazy" src="assets/images/CAGM/cagm_cross_device_benchmark.png" alt="CAGM Cross-Device Benchmark Report: accuracy and proof hashes identical across four machines" decoding="async" data-zoom>
-        <figcaption class="print__cap"><b>A</b>Cross-device benchmark: all proofs identical &middot; click to inspect</figcaption>
-      </figure>
+    <div class="repro-cta reveal-text">
+      <a href="model-drift.html#fix" class="btn btn-solid">CAGM across four environments &rarr;</a>
+      <a href="journey.html#cagm" class="btn">Why I built it &rarr;</a>
+      <a href="pilot.html#tiers" class="btn">Request CAGM &rarr;</a>
     </div>
   </section>
 
   <section id="validation">
     <div class="section-head reveal-text">
-      <h2>4. Test Suites &amp; Validation</h2>
+      <h2>3. Test Suites &amp; Validation</h2>
     </div>
     <ul class="spec__list reveal-text">
       <li><b>SPCMP:</b> 42/42 adversarial assertions passed (NaNs, subnormals, extreme boundaries).</li>
@@ -161,7 +106,7 @@ ie_verify <span class="term-pass">PASS</span><span class="term-dim">  (hash=0x59
       <tr><th>Source</th><th>Scope</th><th>Link</th></tr>
       <tr><td>float-divergence-script</td><td>Sorted-sum experiment, 5 environments, 3 distinct results. Runs anywhere Python runs.</td><td><a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a> &middot; <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" style="color:var(--gold);">Script</a></td></tr>
       <tr><td>prove-model-drift</td><td>Same PyTorch script, same seed, 4 environments: identical final loss, 4 different weights hashes</td><td><a href="https://github.com/SwapnopamMitra/prove-model-drift" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a> &middot; <a href="assets/test_scripts/prove-model-drift.py" download="prove-model-drift.py" style="color:var(--gold);">Script</a> &middot; <a href="model-drift.html" style="color:var(--gold);">Page</a></td></tr>
-      <tr><td>x86-float32-output-divergence</td><td>Same binary, same input, 6 CPU nodes, 6 output hashes; GPU kernel-path findings on T4 and RTX 3050</td><td><a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a></td></tr>
+      <tr><td>gpu-float32-divergence</td><td>GPU harness: FMA, fast-math and atomic-reduction divergence on Tesla T4 and RTX 3050, 1,000,000-element corpus</td><td><a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener" style="color:var(--gold);">Repo</a></td></tr>
     </table>
 
     <div class="doc-subhead mono reveal-text" style="color:var(--text-faint); font-size:12px; letter-spacing:.02em; margin-bottom:8px;">CAGM</div>

@@ -42,8 +42,8 @@
 <main>
   <section class="hero" style="border-top:none; padding-top:72px;">
     <div>
-      <h1><span class="word">Deterministic</span> <span class="word">compute</span> <span class="word">for</span> <span class="word">heterogeneous</span> <span class="word">hardware.</span></h1>
-      <p class="lede">Your float32 data compresses. SPCMP also gives you a Merkle root. Same size reduction, plus tamper-evidence.</p>
+      <h1><span class="word">Deterministic</span> <span class="word">compute</span> <span class="word">across</span> <span class="word">heterogeneous</span> <span class="word">execution</span> <span class="word">paths.</span></h1>
+      <p class="lede">Your float32 data gets compressed. SPCMP also gives it a canonical form, a reversible record, and a Merkle commitment.</p>
       <div class="cta-row">
         <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-solid btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Divergence Script</a>
         <a href="assets/test_scripts/prove_divergence.py" download="prove_divergence.py" class="btn btn-dl"><span class="ico" aria-hidden="true">&#8595;</span>Download the script</a>
@@ -53,7 +53,7 @@
         <button type="button" data-copy="python3 prove_divergence.py">Copy</button>
       </div>
       <p class="test-note">
-        <b>Note:</b> <code>prove_divergence.py</code> is a broad environment test. If your two machines return a hash we&rsquo;ve already published, they behaved identically on this test, which does not prove identical hardware. If they return a unique hex value, that is new data. For a strict bit-exact test, see the <a href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener">x86 harness</a>.
+        <b>Note:</b> <code>prove_divergence.py</code> is a broad environment test. If your two machines return a hash we&rsquo;ve already published, they behaved identically on this test, which does not prove identical hardware. If they return a unique hex value, that is new data. For path-dependent divergence on GPUs (FMA, fast-math, atomic scheduling), see the <a href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener">GPU harness</a>.
       </p>
       <div class="hero-sub">
         <a href="specs.html">Read the Specs &rarr;</a>
@@ -78,11 +78,11 @@
         <div class="brief__links"><a class="btn btn-solid" href="spcmp.html">SPCMP specs and verification &rarr;</a><a class="btn" href="integrity.html">Three layers of integrity</a></div>
       </article>
       <article class="brief glass">
-        <div class="brief__tag">Float divergence &middot; x86 harness</div>
+        <div class="brief__tag">Float divergence &middot; GPU harness</div>
         <h3 class="serif">The Divergence Record</h3>
-        <p>NVIDIA, Intel, AMD, and Microsoft have each confirmed cross-hardware floating-point divergence is expected behavior at their layer. None owns it. None is fixing it.</p>
-        <p>One script, five environments, three answers. Independent harness, same binary, same input, run across real hardware.</p>
-        <div class="brief__links"><a class="btn btn-solid" href="divergence.html">Divergence record &rarr;</a><a class="btn" href="https://github.com/SwapnopamMitra/x86-float32-output-divergence" target="_blank" rel="noopener">x86 harness</a></div>
+        <p>IEEE 754 does not guarantee bit-identical results across platforms, and <a href="https://docs.nvidia.com/cuda/floating-point/index.html" target="_blank" rel="noopener" style="color:var(--gold);">NVIDIA&rsquo;s own CUDA documentation</a> says so. The records below show what that looks like in practice.</p>
+        <p>One script, five environments, three answers. A GPU harness shows the same effect from compiler flags and thread scheduling.</p>
+        <div class="brief__links"><a class="btn btn-solid" href="divergence.html">Divergence record &rarr;</a><a class="btn" href="https://github.com/SwapnopamMitra/gpu-float32-divergence" target="_blank" rel="noopener">GPU harness</a></div>
       </article>
     </div>
   </section>
@@ -90,15 +90,11 @@
   <section id="proof">
     <div class="section-head reveal-text">
       <h2>The Proof</h2>
-      <p>NVIDIA, Intel, AMD, and Microsoft have each confirmed cross-hardware floating-point divergence is expected behavior at their layer. None owns it. None is fixing it.</p>
+      <p>IEEE 754 does not guarantee bit-identical results across platforms, and <a href="https://docs.nvidia.com/cuda/floating-point/index.html" target="_blank" rel="noopener" style="color:var(--gold);">NVIDIA&rsquo;s own CUDA documentation</a> says so. The records below show what that looks like in practice.</p>
     </div>
 
-    <figure class="figure glass reveal-image" style="max-width:480px;">
-      <img src="assets/images/Comp_graphic/comparison.png" alt="Cross-hardware hash verification table" class="proof-image" loading="lazy" decoding="async" data-zoom>
-      <figcaption>Pictorial representation -- see the full record on the divergence page for the actual run data. Click to inspect.</figcaption>
-    </figure>
     <div class="repro-cta reveal-text">
-      <a href="divergence.html#x86" class="btn btn-solid">The full record &rarr;</a>
+      <a href="divergence.html#gpu" class="btn btn-solid">The full record &rarr;</a>
       <a href="divergence.html#reproduce" class="btn">Run it yourself &rarr;</a>
     </div>
   </section>
