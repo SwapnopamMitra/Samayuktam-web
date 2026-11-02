@@ -164,7 +164,36 @@
 <span class="term-cmd">grep "physical id" /proc/cpuinfo | head -1 | cut -d: -f2 | xargs</span>
 <span class="term-dim"># Physical socket ID from /proc/cpuinfo.</span></pre>
     </div>
+    <div class="pilot-why reveal-text">
+      <h3 class="pilot-why__title">Why these four values?</h3>
+      <p>When security teams hear "hardware binding," they worry we are asking for sensitive machine secrets or TPM hashes. We aren't.</p>
+      <p>The four commands above (<code>/etc/machine-id</code>, MAC address, CPU model, physical ID) read standard system identifiers, not secrets. We do not read your files, your environment variables, or your private keys.</p>
+      <p class="pilot-why__quote">Think of it like a shipping address. We need to know which machine to route the license to so that no one else can use it. You are giving us the ZIP code and the street name, not the keys to the house.</p>
+    </div>
+
     <p class="tier__send reveal-text">Send all four values to: <a href="mailto:swapnopam@samayuktam.com"><code>swapnopam@samayuktam.com</code></a></p>
+
+    <div class="pilot-notes">
+      <article class="pilot-note glass reveal-text">
+        <span class="pilot-note__tag">Setup</span>
+        <h3 class="pilot-note__title">Environment Configuration</h3>
+        <p class="pilot-note__lead">The binary binds to the MAC address and Machine ID of the host.</p>
+        <ul class="pilot-note__list">
+          <li><span class="pilot-chip pilot-chip--ok">Supported</span><div><b>WSL2:</b> Supported with a static MAC. Under <code>[wsl2]</code> in <code>.wslconfig</code>, set <code>networkingMode=bridged</code>, <code>vmSwitch</code>, and <code>macAddress</code>.</div></li>
+          <li><span class="pilot-chip pilot-chip--warn">Single session</span><div><b>Google Colab:</b> Supported for single-session evaluation. Runtimes are reassigned, so a Colab binding does not persist across sessions.</div></li>
+          <li><span class="pilot-chip pilot-chip--ok">Supported</span><div><b>Enterprise VMs (VMware, AWS EC2, GCP):</b> You must configure a static MAC address for the instance.</div></li>
+          <li><span class="pilot-chip pilot-chip--no">Not supported</span><div><b>Snapshot/Revert VMs:</b> Reverting a snapshot breaks the hardware fingerprint by design.</div></li>
+        </ul>
+      </article>
+
+      <article class="pilot-note pilot-note--privacy glass reveal-text">
+        <span class="pilot-note__tag">Trust</span>
+        <h3 class="pilot-note__title">Privacy &amp; Storage</h3>
+        <p class="pilot-note__body">These four values are sent once to generate your license. Our server hashes them immediately into a single cryptographic binding key.</p>
+        <p class="pilot-note__body">We do not store the raw MAC address, Machine ID, or CPU serials in our database as plaintext. Once your license is issued, the original email containing the raw hardware identifiers is permanently deleted from our inbox. If our database were ever breached, there is no readable hardware data to steal.</p>
+        <p class="pilot-note__body">Licenses are issued manually by a single operator, with no automated pipeline in the path.</p>
+      </article>
+    </div>
   </section>
 
   <section id="constraints">
@@ -173,8 +202,6 @@
     </div>
     <ul class="spec__list reveal-text">
       <li><b>Linux Only:</b> Requires a live internet connection on every run.</li>
-      <li><b>Supported Environments:</b> WSL2 and Google Colab are supported for single-session evaluation.</li>
-      <li><b>Unsupported Environments:</b> Snapshot/revert-style VMs (VirtualBox, VMware) are not supported, as reverting a snapshot breaks the fingerprint assumption by design. Ephemeral runtimes that change MAC/Machine ID will fail the check.</li>
       <li>Evaluation is under mutual NDA. The core method and internal constants remain sealed.</li>
     </ul>
   </section>
