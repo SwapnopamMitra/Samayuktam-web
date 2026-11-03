@@ -41,19 +41,19 @@
       <h1>The Pilot Program</h1>
       <p>Request a hardware-bound binary for technical evaluation.</p>
     </div>
-    <p class="pilot-hook reveal-text">Your float32 data compresses. Ours also gives you a Merkle root. Same size reduction, plus tamper-evidence. Four commands to verify.</p>
+    <p class="pilot-hook reveal-text">Your float32 data compresses. SPCMP also gives it a Merkle commitment: the same size reduction, plus tamper-evidence. Four commands to verify.</p>
   </section>
 
   <section id="pre-read" style="padding-top:0;border-top:none;">
     <div class="section-head reveal-text">
       <h2>Before You Read the Terms</h2>
-      <p>Your security team will review this program. Their review is better spent on evidence than on our pitch. Start with the divergence results.</p>
+      <p>Your security team will review this program. Their review is better spent on evidence than on my pitch. Start with the divergence results.</p>
     </div>
     <div class="gate gate--3 glass reveal-image">
       <div class="gate__card gate__card--yes">
         <div class="gate__tag">Already reviewed</div>
         <h3 class="serif">Have you gone through the divergence results?</h3>
-        <p>Then we want your read before any paperwork. Objections, reproductions that disagree with ours, and a fourth result are all useful. Send them to us directly.</p>
+        <p>Then I want your read before any paperwork. Objections, reproductions that disagree with mine, and a fourth result are all useful. Send them to me directly.</p>
         <ul>
           <li>Environments you ran, with CPU and Python versions</li>
           <li>The hex view from each</li>
@@ -64,11 +64,11 @@
       <div class="gate__card gate__card--no">
         <div class="gate__tag">Not yet</div>
         <h3 class="serif">Run it first. It takes a minute.</h3>
-        <p>One Python file, run on two different machines your team already has. Compare the hex view against the record. If your result matches nothing we have published, that is the more interesting outcome.</p>
+        <p>One Python file, run on two different machines your team already has. Compare the hex view against the record. If your result matches nothing I have published, that is the more interesting outcome.</p>
         <ul>
           <li>Pick two machines that are actually different (e.g., an Intel laptop and an AMD cloud VM)</li>
           <li>Compare the hex view against the record</li>
-          <li>Come back and tell us what you saw</li>
+          <li>Come back and tell me what you saw</li>
         </ul>
         <div class="repro-cta" style="margin-top:0;">
           <a href="https://github.com/SwapnopamMitra/float-divergence-script" target="_blank" rel="noopener" class="btn btn-run"><span class="ico" aria-hidden="true">&#9654;</span>Run the Script</a>
@@ -105,7 +105,7 @@
     </div>
     <ul class="spec__list reveal-text">
       <li><b>Hardware-Bound:</b> The binary is locked to your machine&rsquo;s MAC address and CPU ID.</li>
-      <li><b>Online-Verified:</b> Every run performs an HTTPS round-trip to our licensing server to verify use count. No offline mode.</li>
+      <li><b>Online-Verified:</b> Every run performs an HTTPS round-trip to my licensing server to verify use count. No offline mode.</li>
       <li><b>Full Output:</b> Generates the actual Merkle roots, canonicalized <code>.pcmp</code> files, and CAGM SHA-256 training proofs.</li>
       <li><b>Verification Profile:</b> Core Verification, or Authenticated Verification with a detached signed manifest. The signing key stays with you. <a href="integrity.html#profiles" style="color:var(--gold);">See both profiles</a>.</li>
     </ul>
@@ -139,12 +139,40 @@
       </div>
     </div>
     <p class="tier__note reveal-text">All prices are visible without contact. No asterisks. A custom trial of 5 uses / 1 day may be granted at no cost, at sole discretion, via email request.</p>
+
+    <div class="prod-head reveal-text">
+      <h3 class="prod-title">Production &amp; Enterprise Licensing</h3>
+      <p class="prod-lead">The pilot is designed for isolated evaluation. For teams integrating SPCMP or CAGM into live production pipelines, I offer custom licensing tiers with higher usage limits, dedicated support, and integration assistance.</p>
+    </div>
+    <div class="pricing-grid pricing-grid--two glass reveal-image">
+      <div class="pricing-card">
+        <div class="serif" style="font-size:18px;">Standard Production</div>
+        <div class="price">Let&rsquo;s discuss your volume</div>
+        <div class="tier__meta">Up to 5,000 runs / month</div>
+        <ul class="prod-list">
+          <li><b>Support:</b> standard email support</li>
+          <li><b>Response target:</b> within 48 hours</li>
+        </ul>
+      </div>
+      <div class="pricing-card pricing-card--bundle">
+        <div class="serif" style="font-size:18px;">Enterprise Production</div>
+        <div class="price">Custom annual contract</div>
+        <div class="tier__meta">Above 5,000 runs / month (custom volume)</div>
+        <ul class="prod-list">
+          <li><b>Support:</b> direct email and debug responses, answered within one business day</li>
+          <li><b>Integration:</b> I will help fit the product into your specific pipeline (CI/CD, MLOps, or data lake)</li>
+        </ul>
+      </div>
+    </div>
+    <p class="tier__note reveal-text"><b>Note on infrastructure:</b> Production licenses require a static, hardware-bound environment. For cloud deployments, this means configuring a static MAC address on your instances. Additionally, the binary requires outbound HTTPS access to the Samayuktam licensing server (<code>drm-license-worker.samayuktam.workers.dev</code>) on every run; there is no offline mode. If the server is unreachable, the run fails.</p>
+    <p class="tier__note reveal-text"><b>Note on support:</b> Samayuktam is a solo-founder operation. You will not be routed to a generic support tier. You will be talking directly to the engineer who built the protocol.</p>
+    <a href="mailto:swapnopam@samayuktam.com?subject=Enterprise%20Consultation" class="btn btn-solid" style="margin-top:18px;">Request Enterprise Consultation</a>
   </section>
 
   <section id="handshake">
     <div class="section-head reveal-text">
       <h2>3. How to Get Bound (The Handshake)</h2>
-      <p>To request a pilot, you do not fill out a form. You email us the hardware fingerprint of the machine you intend to test.</p>
+      <p>To request a pilot, you do not fill out a form. You email me the hardware fingerprint of the machine you intend to test.</p>
     </div>
     <div class="terminal glass reveal-image">
       <div class="terminal-bar"><span class="terminal-title">hardware fingerprint &middot; run all four</span></div>
@@ -166,9 +194,9 @@
     </div>
     <div class="pilot-why reveal-text">
       <h3 class="pilot-why__title">Why these four values?</h3>
-      <p>When security teams hear "hardware binding," they worry we are asking for sensitive machine secrets or TPM hashes. We aren't.</p>
-      <p>The four commands above (<code>/etc/machine-id</code>, MAC address, CPU model, physical ID) read standard system identifiers, not secrets. We do not read your files, your environment variables, or your private keys.</p>
-      <p class="pilot-why__quote">Think of it like a shipping address. We need to know which machine to route the license to so that no one else can use it. You are giving us the ZIP code and the street name, not the keys to the house.</p>
+      <p>When security teams hear "hardware binding," they worry I am asking for sensitive machine secrets or TPM hashes. I&rsquo;m not.</p>
+      <p>The four commands above (<code>/etc/machine-id</code>, MAC address, CPU model, physical ID) read standard system identifiers, not secrets. I do not read your files, your environment variables, or your private keys.</p>
+      <p class="pilot-why__quote">Think of it like a shipping address. I need to know which machine to route the license to so that no one else can use it. You are giving me the ZIP code and the street name, not the keys to the house.</p>
     </div>
 
     <p class="tier__send reveal-text">Send all four values to: <a href="mailto:swapnopam@samayuktam.com"><code>swapnopam@samayuktam.com</code></a></p>
@@ -189,8 +217,8 @@
       <article class="pilot-note pilot-note--privacy glass reveal-text">
         <span class="pilot-note__tag">Trust</span>
         <h3 class="pilot-note__title">Privacy &amp; Storage</h3>
-        <p class="pilot-note__body">These four values are sent once to generate your license. Our server hashes them immediately into a single cryptographic binding key.</p>
-        <p class="pilot-note__body">We do not store the raw MAC address, Machine ID, or CPU serials in our database as plaintext. Once your license is issued, the original email containing the raw hardware identifiers is permanently deleted from our inbox. If our database were ever breached, there is no readable hardware data to steal.</p>
+        <p class="pilot-note__body">These four values are sent once to generate your license. My server hashes them immediately into a single cryptographic binding key.</p>
+        <p class="pilot-note__body">I do not store the raw MAC address, Machine ID, or CPU serials in my database as plaintext. Once your license is issued, the original email containing the raw hardware identifiers is permanently deleted from my inbox. If my database were ever breached, there is no readable hardware data to steal.</p>
         <p class="pilot-note__body">Licenses are issued manually by a single operator, with no automated pipeline in the path.</p>
       </article>
     </div>

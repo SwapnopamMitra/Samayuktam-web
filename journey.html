@@ -200,14 +200,14 @@
         <div class="casefile">
           <div class="casefile__intro">
             <p>I stopped trying to pitch individuals and went straight to the source. I filed a float32 divergence finding, with a public reproducer, directly with the security and engineering divisions of the world&rsquo;s largest hardware vendors. The CPU result in that reproducer was later retracted after I found a fault in my own harness. The vendor positions below concern floating-point behavior in general, not that result.</p>
-            <p>The responses were consistent, and they form the foundation of this entire project.</p>
+            <p>The responses were consistent.</p>
           </div>
 
           <div class="vledger glass" role="table" aria-label="Vendor responses">
             <div class="vledger__head" role="row"><span role="columnheader">Vendor / Channel</span><span role="columnheader">Response</span></div>
             <div class="vledger__row" role="row">
               <span class="vledger__who" role="cell"><b>NVIDIA</b><i>Bug Triage</i></span>
-              <p class="vledger__txt" role="cell">Reviewed the CUDA reproducer and replied that the differences come from different execution paths, such as FMA versus non-FMA and fast versus accurate math functions. These are expected, and not an NVIDIA SDK defect.</p>
+              <p class="vledger__txt" role="cell">Reviewed the CUDA reproducer and replied that the differences come from different execution paths, such as FMA versus non-FMA and fast versus accurate math functions. These are expected, and not an NVIDIA SDK defect. NVIDIA declined to certify the results and pointed to its documentation.</p>
             </div>
             <div class="vledger__row" role="row">
               <span class="vledger__who" role="cell"><b>Microsoft</b><i>MSRC</i></span>
@@ -215,18 +215,18 @@
             </div>
             <div class="vledger__row" role="row">
               <span class="vledger__who" role="cell"><b>AMD</b><i>PSIRT</i></span>
-              <p class="vledger__txt" role="cell">Acknowledged the finding but declined to pursue it, citing a lack of demonstrated security impact at the silicon level.</p>
+              <p class="vledger__txt" role="cell">Treated the report as outside security triage.</p>
             </div>
             <div class="vledger__row" role="row">
               <span class="vledger__who" role="cell"><b>Intel</b><i>PSIRT</i></span>
-              <p class="vledger__txt" role="cell">Routed the finding to their bug bounty intake, confirming it fell outside standard vulnerability triage.</p>
+              <p class="vledger__txt" role="cell">Treated the report as outside security triage.</p>
             </div>
           </div>
 
           <div class="casefile__worth">
             <h4 class="casefile__label">What this evidence is worth</h4>
-            <p>These responses are not a rejection of the math. The vendors that replied describe the same position: results depend on the compiler, the math library and the execution path, and no vendor guarantees bit-identical output across all of them.</p>
-            <p>The problem spans compilers, math libraries and silicon, so no single vendor controls all of it. That is the opening for a vendor-neutral canonicalization layer.</p>
+            <p>NVIDIA&rsquo;s documentation explicitly states that IEEE 754 does not guarantee bit-identical results across platforms. The other vendors treated the report as outside their security triage. The problem spans silicon, compilers, and math libraries, so no single vendor controls all of it.</p>
+            <p>That is the opening for a vendor-neutral canonicalization layer.</p>
             <p class="story__close">That is what Samayuktam provides.</p>
           </div>
 
