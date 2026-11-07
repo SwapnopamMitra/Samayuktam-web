@@ -18,6 +18,7 @@
 <script src="js/film.js" defer></script>
 <script src="js/lightbox.js" defer></script>
 <script src="js/integrity.js" defer></script>
+<script src="js/pipeline.js" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -95,7 +96,7 @@
         <p class="test-note"><b>Detached:</b> the signature lives in a separate manifest, so the <code>.pcmp</code> file itself is unchanged.</p>
       </div>
       <div class="ig-demo glass" id="ig2">
-        <div class="ig-demo__bar"><span>receiving verifier &middot; illustration</span><span>checked in this order</span></div>
+        <div class="ig-demo__bar"><span>receiving pipeline &middot; illustration</span><span>checked in this order</span></div>
         <div class="ig-flow" id="ig2-flow"></div>
         <div class="ig-btns">
           <button type="button" data-act="genuine">Genuine file</button>
@@ -119,6 +120,26 @@
         <span>hardware attestation</span><span>execution logs</span><span>build provenance</span><span>business validation</span>
       </div>
     </article>
+  </section>
+
+  <section id="story">
+    <div class="section-head reveal-text">
+      <h2>How It Protects a Company</h2>
+      <p>One file&rsquo;s journey from a company&rsquo;s build server to its receiving pipeline. Eight scenes show attacks I tested, including a size bomb. Two show what the verifier does not stop. Pick a pipeline to see where the verifier fits. This is an illustration, not a live system.</p>
+    </div>
+    <div class="pl glass reveal-text" id="pl">
+      <p class="pl-nojs">Eight attacks were tested: a file altered in transit, an edited manifest, a wrong key, a damaged manifest, a signed but logically invalid file, a tampered permutation, a size bomb, and malformed input, with a valid file as the control. Two cases are not stopped by the verifier: a replayed older release and a stolen signing key.</p>
+      <div class="pl-ui">
+        <div class="pl-ex"><span class="pl-exl">Where it fits</span><div class="pl-exb"></div></div>
+        <p class="pl-fit"></p>
+        <div class="pl-tabs" role="group" aria-label="Scenes"></div>
+        <span class="pl-tag ok"></span>
+        <svg class="pl-svg" viewBox="0 -34 800 380" role="img" aria-label="An isometric circuit showing a file moving from build and sign, through transit, to the verifier, then to the company pipeline or a quarantine block"></svg>
+        <div class="pl-cap" aria-live="polite"></div>
+        <div class="pl-ctl"><button type="button" class="pl-prev">Back</button><button type="button" class="pl-play">Play</button><button type="button" class="pl-next">Next</button><span class="pl-count"></span></div>
+        <p class="pl-note">The verifier is stateless by design. Release order, freshness and key custody belong to your pipeline.</p>
+      </div>
+    </div>
   </section>
 
   <section id="profiles">
@@ -215,11 +236,11 @@
     </table>
     </div>
     <div class="ig-stats reveal-text" style="margin-top:18px;">
-      <div class="ig-stat ig-stat--plain"><b>22 / 22</b><span>regression checks passed</span></div>
-      <div class="ig-stat" style="grid-column: span 2;"><span style="margin:0;font-size:12.5px;line-height:1.65;color:var(--text-dim);letter-spacing:0;">The harness covers malformed, missing and corrupted manifests and signatures; wrong, missing and unreadable keys; truncated and corrupted files; altered structure; tampered commitments; and a check that the core verifier itself was left unmodified. A valid signature alone cannot make an invalid artifact acceptable.</span></div>
+      <div class="ig-stat ig-stat--plain"><b>32 / 32</b><span>consolidated regression assertions passed</span></div>
+      <div class="ig-stat" style="grid-column: span 2;"><span style="margin:0;font-size:12.5px;line-height:1.65;color:var(--text-dim);letter-spacing:0;">The campaigns cover Ed25519 signatures with wrong, mismatched and foreign keys; malformed, missing, duplicate and unknown manifest fields; tampered artifact bytes; empty, truncated and malformed artifacts; permutation swaps and duplicates; commitment mismatches; and deterministic commitments. A valid signature alone cannot make an invalid artifact acceptable. Separate campaigns recorded 16/16 authentication, 16/16 malformed-input parser, 4/4 direct commitment and 5/5 serialized mutation tests. They overlap, so the counts are not summed.</span></div>
     </div>
     <aside class="test-note test-note--block reveal-text ig-limits">
-      <p><b>What this test does not show:</b> It covers one small file. Larger files have larger compressed regions and may contain more of the harmless kind. It does not test someone who can rewrite the file and its commitment, which is what Layer 2 is for. It does not test whether a computation ran correctly. Hostile-input resource exhaustion and legacy build rejection are still being audited.</p>
+      <p><b>What this test does not show:</b> It covers one small file. Larger files have larger compressed regions and may contain more of the harmless kind. It does not test someone who can rewrite the file and its commitment, which is what Layer 2 is for. It does not test whether a computation ran correctly. Four targeted hostile-input cases were rejected by the compiled verifier: a float-payload and a permutation decompression bomb, each at its size limit; a forged 10,000-chunk metadata block; and a huge declared element count with a tiny body. A genuine file with thousands of chunks, broader hostile-input testing, replay and freshness checks, and exhaustive fuzzing were not tested, and this is not an independent security audit.</p>
     </aside>
   </section>
 
@@ -235,7 +256,7 @@
       <tr><td>A bit changes in the compression layer, decoded data identical</td><td class="ig-maybe">May pass</td><td class="ig-yes">Detected (file bytes change)</td></tr>
       <tr><td>File replaced by a forgery with a recomputed commitment</td><td class="ig-maybe">Passes</td><td class="ig-yes">Detected (no valid signature)</td></tr>
       <tr><td>The signed manifest&rsquo;s digest is altered</td><td class="ig-maybe">Not necessarily</td><td class="ig-yes">Detected (signature fails)</td></tr>
-      <tr><td>An older, validly signed file is replayed</td><td class="ig-maybe">Passes</td><td class="ig-yes">Detected (release identifier in the signed manifest)</td></tr>
+      <tr><td>An older, validly signed file is replayed</td><td class="ig-maybe">Passes</td><td class="ig-no">Not detected by the verifier; release tracking is the receiving organisation&rsquo;s control</td></tr>
       <tr><td>A trusted key signs outside its authorised scope</td><td class="ig-no">Not detected</td><td class="ig-no">Not detected by the signature alone; needs key scope and revocation policy</td></tr>
       <tr><td>An authorised producer signs incorrect data</td><td class="ig-no">Not detected</td><td class="ig-no">Not detected; business validation</td></tr>
       <tr><td>Wrong code ran, but the output is validly signed</td><td class="ig-no">Not detected</td><td class="ig-no">Not detected; execution attestation</td></tr>
@@ -255,7 +276,7 @@
       <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 2</span><h4>Canonicalize and commit</h4><p>SPCMP puts the data into its canonical form and computes the content commitment.</p></div>
       <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 3</span><h4>Finish the artifact</h4><p>The <code>.pcmp</code> file is finalized. Only now is it hashed, so the signature never has to cover a file that contains its own hash.</p></div>
       <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 4</span><h4>Authenticate the exact file</h4><p>A signing service backed by an HSM or key-management service signs the file&rsquo;s SHA-256 digest. The private key never leaves it.</p></div>
-      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 5</span><h4>Distribute file and signed manifest</h4><p>The manifest binds the digest to the profile and version, file length, content commitment, key ID, and a release identifier that blocks replay of older files.</p></div>
+      <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 5</span><h4>Distribute file and signed manifest</h4><p>The signed manifest binds the file name, SHA-256 digest and size, the key ID and the profile.</p></div>
       <div class="ig-step"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 6</span><h4>Independent verification</h4><p>The bank&rsquo;s own verifier checks the signature and exact file hash first, then runs the SPCMP content and structure checks.</p></div>
       <div class="ig-step ig-step--stop"><i class="diya" aria-hidden="true"></i><span class="ig-step__n">STEP 7</span><h4>Accept or quarantine</h4><p>Accept only if every required check passes. Otherwise reject, quarantine and log. There is no silent fallback to the weaker check.</p></div>
     </div>
@@ -264,8 +285,8 @@
     <div class="ig-grid4 reveal-image">
       <div class="ig-card glass"><h4>Key custody</h4><p>Signing keys stay apart from whoever produces the file. The bank pins trusted public keys, defines what each key may sign, and runs rotation and revocation.</p></div>
       <div class="ig-card glass"><h4>Signed manifest</h4><p>A defined, canonically encoded manifest, so the exact signed bytes are unambiguous.</p></div>
-      <div class="ig-card glass"><h4>Replay and rollback</h4><p>A valid signature does not mean newest. The signed manifest carries a release identifier the verifier checks, so an old file cannot replace a new one.</p></div>
-      <div class="ig-card glass"><h4>Audit evidence</h4><p>Digest, commitment, key ID, verifier version, result, time and release ID go to tamper-evident storage, with duties separated.</p></div>
+      <div class="ig-card glass"><h4>Replay and rollback</h4><p>A valid signature does not mean newest. The verifier does not track release order, so an old, validly signed file passes its checks. Track approved digests or release numbers in your own pipeline, and reject anything else.</p></div>
+      <div class="ig-card glass"><h4>Audit evidence</h4><p>Digest, commitment, key ID, verifier version, result, time and your own release reference go to tamper-evident storage, with duties separated.</p></div>
     </div>
   </section>
 

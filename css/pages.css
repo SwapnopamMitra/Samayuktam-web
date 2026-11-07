@@ -154,3 +154,6 @@
   .pricing-grid--two { grid-template-columns: 1fr; }
 }
 .tier__note code { word-break: break-all; }
+.pilot-hero { position: relative; overflow: hidden; }
+.pilot-hero > * { position: relative; z-index: 1; }
+.pilot-hero .btn-solid { box-shadow: 0 0 26px rgba(255,140,30,.45); }

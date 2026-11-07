@@ -41,15 +41,15 @@
   
   function demo2() {
     const root = $("#ig2"); if (!root) return;
-    const NODES = [["Producer", "hash + sign"], ["Transfer", "file + manifest"], ["Signature", "exact file hash"], ["Content", "Layer 1 check"], ["Release", "version check"], ["Result", ""]];
+    const NODES = [["Producer", "hash + sign"], ["Transfer", "file + manifest"], ["Signature", "exact file hash"], ["Content", "Layer 1 check"], ["Release", "your policy"], ["Result", ""]];
     const flow = $("#ig2-flow"), verdict = $("#ig2-verdict");
     flow.innerHTML = NODES.map((n) => `<div class="ig-node"><em>&#9679;</em><span>${n[0]}</span><span>${n[1]}</span></div>`).join("");
     const N = $$(".ig-node", flow);
     const S = {
-      genuine: { fail: -1, cls: "pass", msg: "<b>ACCEPTED.</b> Signature valid, file bytes match the signed hash, content commitment matches, release is the approved one." },
+      genuine: { fail: -1, cls: "pass", msg: "<b>ACCEPTED.</b> Signature valid, file bytes match the signed hash, content commitment matches, and the release is on your approved list." },
       forged: { fail: 2, cls: "rej", msg: "<b>QUARANTINED at the signature check.</b> The forger rewrote the file and recomputed its commitment, so Layer 1 alone would have passed it. Without the signing key they cannot produce a valid signature over the new file." },
       frame: { fail: 2, cls: "rej", msg: "<b>QUARANTINED at the exact-bytes check.</b> One bit changed inside the compression layer. The decoded data is identical, so Layer 1 would pass it, but the file&rsquo;s hash no longer matches the signed hash." },
-      replay: { fail: 4, cls: "rej", msg: "<b>QUARANTINED at the release check.</b> The old file&rsquo;s signature is genuine and its content is intact, but a signature does not say a file is the newest. The signed manifest carries a release identifier, and the verifier rejects a release that is not the approved one." },
+      replay: { fail: 4, cls: "rej", msg: "<b>QUARANTINED at your release policy.</b> The old file&rsquo;s signature is genuine and its content is intact, so the verifier accepts it. A signature does not say a file is the newest. Rejecting it takes a release check that you run: track approved digests or release numbers in your pipeline." },
       wrong: { fail: -1, cls: "warn", msg: "<b>ACCEPTED, and every layer was right to.</b> The producer was authorised and the file is intact. Cryptography establishes integrity and provenance, not that the underlying result is correct. That needs business validation and execution evidence." },
     };
     let token = 0;

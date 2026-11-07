@@ -84,7 +84,7 @@
 <span class="term-cmd">./spcmp sort input.bin</span>
 
 <span class="term-dim"># 2. Verify the Merkle commitment</span>
-<span class="term-cmd">python3 verify.py input.sorted.pcmp --info</span>
+<span class="term-cmd">./verify input.sorted.pcmp --info</span>
 
 <span class="term-dim"># 3. Reconstruct the original array</span>
 <span class="term-cmd">./spcmp unsort input</span>
@@ -92,25 +92,26 @@
 <span class="term-dim"># 4. Compare for byte-for-byte lossless recovery</span>
 <span class="term-cmd">cmp input.bin input.unsorted.bin</span></pre>
     </div>
+    <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> The verifier and signer are provided as native Linux ELF binaries that require glibc 2.14 or newer, including under WSL2, for broad compatibility across Linux environments. No Python installation or external dependencies are required.</p>
 
-    <h3 class="spec__sub reveal-text">verify.py output</h3>
+    <h3 class="spec__sub reveal-text">verify output</h3>
     <div class="terminal glass reveal-image">
-      <div class="terminal-bar"><span class="terminal-title">verify.py &middot; summary mode &middot; abbreviated</span></div>
-      <pre class="terminal-body"><span class="term-dim">$ </span><span class="term-cmd">python3 verify.py model_weights_1m.sorted.pcmp</span>
+      <div class="terminal-bar"><span class="terminal-title">verify &middot; summary mode &middot; abbreviated</span></div>
+      <pre class="terminal-body"><span class="term-dim">$ </span><span class="term-cmd">./verify model_weights_1m.sorted.pcmp</span>
 [<span class="term-ok">OK</span>] model_weights_1m.sorted.pcmp n=1000000
 
-<span class="term-dim">$ </span><span class="term-cmd">python3 verify.py model_weights_1m_altered.sorted.pcmp</span>
+<span class="term-dim">$ </span><span class="term-cmd">./verify model_weights_1m_altered.sorted.pcmp</span>
 [<span class="term-warn">FAIL</span>] model_weights_1m_altered.sorted.pcmp n=1000000
 
 <span class="term-dim"># exit status 0 = accepted, 1 = rejected, so it drops straight into a pipeline step</span></pre>
     </div>
 
-    <h3 class="spec__sub reveal-text">Layer 2: Sign and Verify with verify_v2.py</h3>
-    <p class="test-note reveal-text" style="margin-bottom:14px;">Continues from the sorted file above. Sign it once with your private key, then verify with the matching public key. <code>verify_v2.py</code> authenticates the exact bytes first, then runs the same logical verification as <code>verify.py</code>.</p>
+    <h3 class="spec__sub reveal-text">Layer 2: Sign and Verify with verify_v2</h3>
+    <p class="test-note reveal-text" style="margin-bottom:14px;">Continues from the sorted file above. Sign it once with your private key, then verify with the matching public key. <code>verify_v2</code> authenticates the exact bytes first, then runs the same logical verification as <code>verify</code>.</p>
     <div class="terminal glass reveal-image">
-      <div class="terminal-bar"><span class="terminal-title">pcmp_sign.py &middot; verify_v2.py &middot; abbreviated</span></div>
+      <div class="terminal-bar"><span class="terminal-title">pcmp_sign &middot; verify_v2 &middot; abbreviated</span></div>
       <pre class="terminal-body"><span class="term-dim"># 5. Sign the sorted file (prompts for the private-key passphrase)</span>
-<span class="term-cmd">python3 pcmp_sign.py sign input.sorted.pcmp \
+<span class="term-cmd">./pcmp_sign sign input.sorted.pcmp \
   --private-key pcmp_ed25519_private.pem \
   --key-id my-prod-key</span>
 Signed artifact: input.sorted.pcmp
@@ -119,7 +120,7 @@ Key ID:         my-prod-key
 Manifest:       input.sorted.pcmp.manifest.json
 
 <span class="term-dim"># 6. Verify authenticity first, then the contents</span>
-<span class="term-cmd">python3 verify_v2.py input.sorted.pcmp \
+<span class="term-cmd">./verify_v2 input.sorted.pcmp \
   --public-key pcmp_ed25519_public.pem \
   --expected-key-id my-prod-key \
   --info</span>

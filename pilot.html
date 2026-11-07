@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/festive.css">
 <link rel="stylesheet" href="css/divergence.css">
 <link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/beam.css">
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
@@ -16,6 +17,7 @@
 <script src="js/main.js" defer></script>
 <script src="js/film.js" defer></script>
 <script src="js/divergence.js" defer></script>
+<script src="js/beam.js" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -36,7 +38,7 @@
 </nav>
 
 <main>
-  <section style="border-top:none;">
+  <section class="pilot-hero" style="border-top:none;">
     <div class="section-head reveal-text">
       <h1>The Pilot Program</h1>
       <p>Request a hardware-bound binary for technical evaluation.</p>
@@ -164,7 +166,7 @@
         </ul>
       </div>
     </div>
-    <p class="tier__note reveal-text"><b>Note on infrastructure:</b> Production licenses require a static, hardware-bound environment. For cloud deployments, this means configuring a static MAC address on your instances. Additionally, the binary requires outbound HTTPS access to the Samayuktam licensing server (<code>drm-license-worker.samayuktam.workers.dev</code>) on every run; there is no offline mode. If the server is unreachable, the run fails.</p>
+    <p class="tier__note reveal-text"><b>Note on infrastructure:</b> Production licenses require a static, hardware-bound environment. For cloud deployments, this means configuring a static MAC address on your instances. Additionally, the binary requires outbound HTTPS access to the Samayuktam licensing server (<code>license.samayuktam.com</code>) on every run; there is no offline mode. If the server is unreachable, the run fails.</p>
     <p class="tier__note reveal-text"><b>Note on support:</b> Samayuktam is a solo-founder operation. You will not be routed to a generic support tier. You will be talking directly to the engineer who built the protocol.</p>
     <a href="mailto:swapnopam@samayuktam.com?subject=Enterprise%20Consultation" class="btn btn-solid" style="margin-top:18px;">Request Enterprise Consultation</a>
   </section>
