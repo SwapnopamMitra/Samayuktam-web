@@ -94,6 +94,44 @@
     </div>
     <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> The verifier and signer are provided as native Linux ELF binaries that require glibc 2.14 or newer, including under WSL2, for broad compatibility across Linux environments. No Python installation or external dependencies are required.</p>
 
+    <h3 class="spec__sub reveal-text">Verify the Tools Before You Trust Them</h3>
+    <p class="reveal-text" style="color:var(--text-dim); font-size:14.5px; line-height:1.7; max-width:66ch; margin-bottom:16px;">A verdict is only as trustworthy as the tool that gives it. Before first use, check the three binaries against the published checksums and the release signature. The checksum list, signature and public key are delivered with your licensed copy. Compare their contents with the values published here, or recreate the files from this page with the commands below and run the three checks.</p>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">recreate the files from this page</span></div>
+      <pre class="terminal-body"><span class="term-dim"># Public key</span>
+<span class="term-cmd">cat &gt; spcmp-release-public.pem &lt;&lt;'EOF'
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAUl1lqlSt3GlOLow+ZZDRNPneJs3nZlAqCAn+vXDUVCs=
+-----END PUBLIC KEY-----
+EOF</span>
+
+<span class="term-dim"># Signature (base64, 64 bytes when decoded)</span>
+<span class="term-cmd">echo '68tvTcbTLCuBourc4BZmytt9lKO8DqijAa1nyGBZNF7DwE6CRyb511dwd4rRVKVlwo9wiAQ19aNlHbdf+pdSBg==' | base64 -d &gt; SHA256SUMS.sig</span>
+
+<span class="term-dim"># Checksum list</span>
+<span class="term-cmd">cat &gt; SHA256SUMS &lt;&lt;'EOF'
+87d9bae298650ceb409b22a2f2063b9bd69508fa2ca38746cfd91cb760ff18cc  pcmp_sign
+8b1599160b2c2c8b56122895f3a53a43b93f7751c0f3dd30312aaaf19fc73fe6  verify
+57fb454f8f5b54034c8f2a13e65aa1b51d25356ea44fa26f4ff37b132057ddf9  verify_v2
+EOF</span></pre>
+    </div>
+    <p class="reveal-text" style="color:var(--text-dim); font-size:14px; line-height:1.7; margin:16px 0 8px;">Release signing key fingerprint (SHA-256 of the DER public key):</p>
+    <p class="reveal-text" style="margin:0 0 18px;"><code style="word-break:break-all; color:var(--gold-bright);">0ca0ac5ba910e91b396b7c1285e9535d458746b49eecd705fad820a172c7c274</code></p>
+    <div class="terminal glass reveal-image">
+      <div class="terminal-bar"><span class="terminal-title">verify the release</span></div>
+      <pre class="terminal-body"><span class="term-dim"># 1. Check the public key fingerprint</span>
+<span class="term-cmd">openssl pkey -pubin -in spcmp-release-public.pem -outform DER | sha256sum</span>
+
+<span class="term-dim"># 2. Verify the signature on the checksum list</span>
+<span class="term-cmd">openssl pkeyutl -verify -rawin -pubin \
+  -inkey spcmp-release-public.pem \
+  -in SHA256SUMS -sigfile SHA256SUMS.sig</span>
+
+<span class="term-dim"># 3. Check the binaries against the list</span>
+<span class="term-cmd">sha256sum -c SHA256SUMS</span></pre>
+    </div>
+    <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> Run steps 1 and 2 on any machine with OpenSSL 3.x, then run step 3 on the machine where the binaries will run. Compare the fingerprint with a second source, such as the message that delivered your files, because files and checksums that arrive together can be replaced together. These values belong to the current release and change when the binaries are rebuilt.</p>
+
     <h3 class="spec__sub reveal-text">verify output</h3>
     <div class="terminal glass reveal-image">
       <div class="terminal-bar"><span class="terminal-title">verify &middot; summary mode &middot; abbreviated</span></div>
