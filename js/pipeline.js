@@ -7,6 +7,7 @@
     { t: "ML model release", n: ["Training run", "Signing (KMS)", "Model registry", "Verifier", "Ingestion gate", "Serving cluster"], f: "The verifier is one step in the gate that promotes a model from the registry to serving. Exit code 0 lets the model through. Anything else stops the deploy." },
     { t: "Data lake ingestion", n: ["Partner feed", "Signing (HSM)", "Landing bucket", "Verifier", "Ingestion gate", "Data lake"], f: "The verifier runs on each file in the landing bucket before the ingestion job reads it. Failed files stay in quarantine and the job moves on." },
     { t: "CI/CD release", n: ["Build server", "Signing (KMS)", "Artifact repo", "Verifier", "Deploy gate", "Production"], f: "The verifier runs as a pipeline stage after the artifact is fetched and before deploy. A non-zero exit fails the stage." },
+    { t: "Float32 database export", p: 1, n: ["Your database", "SPCMP + signing", "Encrypted store", "Verifier", "Unsort", "Your database"], f: "Export the float32 columns to float32.bin, run spcmp, sign the manifest, then encrypt and store. On retrieval, decrypt, run verify_v2, unsort to restore float32.bin, apart from collapsed signed zeros and NaN payloads, and load it back. Encryption and key management stay with you." },
     { t: "Regulated archive", n: ["Records system", "Signing (HSM)", "Archive store", "Verifier", "Intake gate", "Auditor access"], f: "The verifier runs on retrieval, so an auditor receives data checked against the commitment sealed at write time." }
   ];
   var A = "The company's system produces a float32 file and seals it with a Layer 1 content commitment.";
@@ -103,7 +104,7 @@
   el("polygon", { points: "-9,-3 0,2 0,12 -9,7" }, ti); el("polygon", { points: "9,-3 0,2 0,12 9,7" }, ti); el("polygon", { points: "0,-8 9,-3 0,2 -9,-3", "class": "top" }, ti);
   var tl = el("text", { y: -22, "class": "tl" }, tok);
 
-  var tabs = root.querySelector(".pl-tabs"), cap = root.querySelector(".pl-cap"), tag = root.querySelector(".pl-tag"), fit = root.querySelector(".pl-fit"), exb = root.querySelector(".pl-exb");
+  var tabs = root.querySelector(".pl-tabs"), cap = root.querySelector(".pl-cap"), tag = root.querySelector(".pl-tag"), fit = root.querySelector(".pl-fit"), exb = root.querySelector(".pl-exb"), pipe = root.querySelector(".pl-pipe");
   var cnt = root.querySelector(".pl-count"), play = root.querySelector(".pl-play"), prev = root.querySelector(".pl-prev"), next = root.querySelector(".pl-next");
   var si = 0, st = 0, ei = 0, timer = null;
   S.forEach(function (sc, j) {
@@ -118,6 +119,7 @@
     ei = j; var e = EX[j];
     [0, 1, 2, 3, 4, 5].forEach(function (n) { if (n !== 3) names[n].textContent = e.n[n]; });
     fit.textContent = "Where it fits: " + e.f;
+    pipe.hidden = !e.p;
     Array.prototype.forEach.call(exb.children, function (b, k) { b.className = k === j ? "on" : ""; });
   }
   function go(a, k) {

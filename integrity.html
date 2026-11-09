@@ -132,6 +132,16 @@
       <div class="pl-ui">
         <div class="pl-ex"><span class="pl-exl">Where it fits</span><div class="pl-exb"></div></div>
         <p class="pl-fit"></p>
+        <div class="pl-pipe" hidden>
+          <ol class="pl-steps">
+            <li class="y">Export<small>yours</small></li><li>Seal<small>spcmp</small></li><li>Sign<small>pcmp_sign</small></li><li class="y">Encrypt<small>yours</small></li><li class="y">Store<small>yours</small></li><li class="y">Decrypt<small>yours</small></li><li>Verify<small>verify_v2</small></li><li>Unsort<small>spcmp</small></li><li class="y">Load<small>yours</small></li>
+          </ol>
+          <p class="pl-res">Tested on a 29.3 MiB SQLite database: 0 of 30,703,616 bytes differed after the round trip. The sealed file was 2.2 MiB, with zstd -19 at 1.29 MiB and xz -9 at 1.24 MiB. AES-256-GCM added 28 bytes, the decrypted file was accepted, and a one-bit change was rejected.</p>
+          <details class="pl-code"><summary>Encrypt and decrypt example (your tooling, your keys)</summary><pre>key = AESGCM.generate_key(bit_length=256)
+nonce = os.urandom(12)
+blob = nonce + AESGCM(key).encrypt(nonce, pcmp_bytes, b"label")
+pcmp_bytes = AESGCM(key).decrypt(blob[:12], blob[12:], b"label")</pre></details>
+        </div>
         <div class="pl-tabs" role="group" aria-label="Scenes"></div>
         <span class="pl-tag ok"></span>
         <svg class="pl-svg" viewBox="0 -34 800 380" role="img" aria-label="An isometric circuit showing a file moving from build and sign, through transit, to the verifier, then to the company pipeline or a quarantine block"></svg>
@@ -237,7 +247,7 @@
     </div>
     <div class="ig-stats reveal-text" style="margin-top:18px;">
       <div class="ig-stat ig-stat--plain"><b>32 / 32</b><span>consolidated regression assertions passed</span></div>
-      <div class="ig-stat" style="grid-column: span 2;"><span style="margin:0;font-size:12.5px;line-height:1.65;color:var(--text-dim);letter-spacing:0;">The campaigns cover Ed25519 signatures with wrong, mismatched and foreign keys; malformed, missing, duplicate and unknown manifest fields; tampered artifact bytes; empty, truncated and malformed artifacts; permutation swaps and duplicates; commitment mismatches; and deterministic commitments. A valid signature alone cannot make an invalid artifact acceptable. Separate campaigns recorded 16/16 authentication, 16/16 malformed-input parser, 4/4 direct commitment and 5/5 serialized mutation tests. They overlap, so the counts are not summed.</span></div>
+      <div class="ig-stat" style="grid-column: span 2;"><span style="margin:0;font-size:12.5px;line-height:1.65;color:var(--text-dim);letter-spacing:0;">The campaigns cover Ed25519 signatures with wrong, mismatched and foreign keys; malformed, missing, duplicate and unknown manifest fields; tampered artifact bytes; empty, truncated and malformed artifacts; permutation swaps and duplicates; commitment mismatches; and deterministic commitments. A valid signature alone cannot make an invalid artifact acceptable. Separate campaigns recorded 16/16 authentication, 16/16 malformed-input parser, 4/4 direct commitment and 5/5 serialized mutation tests. They overlap, so the counts are not summed. A one-bit change at the midpoint of a 2.2 MB sealed artifact, with the original signed manifest in place, was rejected at Layer 2. An artifact encrypted with AES-256-GCM and decrypted again was accepted, which confirms that verification belongs after decryption.</span></div>
     </div>
     <aside class="test-note test-note--block reveal-text ig-limits">
       <p><b>What this test does not show:</b> It covers one small file. Larger files have larger compressed regions and may contain more of the harmless kind. It does not test someone who can rewrite the file and its commitment, which is what Layer 2 is for. It does not test whether a computation ran correctly. Four targeted hostile-input cases were rejected by the compiled verifier: a float-payload and a permutation decompression bomb, each at its size limit; a forged 10,000-chunk metadata block; and a huge declared element count with a tiny body. A genuine file with thousands of chunks, broader hostile-input testing, replay and freshness checks, and exhaustive fuzzing were not tested, and this is not an independent security audit.</p>

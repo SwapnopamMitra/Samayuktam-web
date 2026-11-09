@@ -52,6 +52,7 @@
       <a href="mailto:swapnopam@samayuktam.com?subject=SPCMP%20Pilot%20Request" class="btn btn-solid">Request SPCMP</a>
       <a href="pilot.html#tiers" class="btn">Pilot tiers &rarr;</a>
       <a href="integrity.html" class="btn">Three layers of integrity &rarr;</a>
+      <a href="#why-float32" class="btn">Why float32? &darr;</a>
       <a href="#scale" class="btn">Watch it scale &darr;</a>
       <a href="#simulation" class="btn">Speed simulation &darr;</a>
       <a href="divergence.html" class="btn">Divergence record &rarr;</a>
@@ -71,10 +72,32 @@
       <ul class="spec__list">
         <li><b>Canonical:</b> one deterministic form per dataset, regardless of the machine. Cross-hardware results are in the Test Reports.</li>
         <li><b>Tamper-evident:</b> changes to the committed content fail verification. In an exhaustive bit-flip test on a 1,000-element file, 38,430 of 38,440 flips were rejected. The other 10 decoded to identical content. <a href="integrity.html#tested" style="color:var(--gold);">See the test &rarr;</a></li>
-        <li><b>Reversible:</b> <code>unsort</code> restores the exact original bytes, order included.</li>
+        <li><b>Reversible:</b> <code>unsort</code> restores the original array and its order, bit for bit. The one exception is that signed zeros and NaN payloads are collapsed by design: <code>-0.0</code> returns as <code>+0.0</code>, and any NaN returns as one canonical quiet NaN.</li>
         <li><b>Not a speed tax:</b> at 100 million elements, SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs. On uniform and normal data: 4.65&times; and 4.40&times; (CPU run), 4.77&times; and 4.31&times; (GPU run), and up to 27.09&times; on duplicate-heavy data. It is slower on subnormal and sawtooth data, and below roughly 100,000 elements. SPCMP&rsquo;s timings include compression and the unsort record, which the other sorts do not produce. Charts below.</li>
       </ul>
       <p class="test-note" style="margin-top:14px;"><b>Where SPCMP stops:</b> the Merkle commitment establishes what the data contains. It does not establish who created the file. Authenticated Verification does: a detached digital signature binds the exact finished file to an authorized signing key, and is checked before the file is trusted. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity &rarr;</a></p>
+    </div>
+
+  </section>
+
+  <section id="why-float32">
+    <div class="section-head reveal-text">
+      <h2>Why Float32?</h2>
+      <p>SPCMP is a container for float32 numbers, not a general file format. Here is where it fits, where it doesn&rsquo;t, and what I tested.</p>
+    </div>
+    <div class="spec reveal-text">
+      <div class="spec__row"><span class="spec__label">The Short Answer</span><p>SPCMP is built around float32 problems: signed zeros, NaN payloads, and one dataset stored in many byte orders. That is where a canonical form and a content commitment earn their keep.</p></div>
+      <div class="spec__row"><span class="spec__label">Where It Fits</span><p>Numeric data you already hold as float32, such as model weights, embeddings, sensor logs and numeric database columns. Export to float32.bin, seal it, and restore it bit for bit, apart from the signed zeros and NaN payloads that SPCMP collapses by design.</p></div>
+      <div class="spec__row"><span class="spec__label">Where It Doesn&rsquo;t</span><p>Text and integer data. A general compressor and a plain hash do the job, and SPCMP adds little. Incompressible data such as random bytes can come out slightly larger than the input.</p></div>
+      <div class="spec__row"><span class="spec__label">Other Data</span><p>Do not reinterpret raw bytes as float32 bit patterns: a word that happens to form a NaN or a negative zero would be changed. Encoding each byte as the float value 0.0 to 255.0 is safe, because none of those values is a NaN or a negative zero, but it quadruples the size before compression.</p></div>
+      <div class="spec__row"><span class="spec__label">One Test</span><p>A 29.3 MiB SQLite database encoded this way, including 1 MiB of random bytes and all 256 byte values, round-tripped bit for bit through a 2.2 MiB sealed file. On the same file zstd -19 produced 1.29 MiB and xz -9 produced 1.24 MiB, so a general compressor did better on size. SPCMP&rsquo;s value here is the commitment and the exact restore.</p></div>
+      <div class="spec__row"><span class="spec__label">The Pipeline</span><p>Database to float32.bin, seal, sign, encrypt, store. Then decrypt, verify, unsort and load back. <a href="integrity.html#story" style="color:var(--gold);">See it step by step &rarr;</a></p></div>
+    </div>
+  </section>
+
+  <section id="commands">
+    <div class="section-head reveal-text">
+      <h2>Run It: Commands and Layer 2</h2>
     </div>
 
     <h3 class="spec__sub reveal-text">The 4 Commands</h3>
@@ -89,7 +112,7 @@
 <span class="term-dim"># 3. Reconstruct the original array</span>
 <span class="term-cmd">./spcmp unsort input</span>
 
-<span class="term-dim"># 4. Compare for byte-for-byte lossless recovery</span>
+<span class="term-dim"># 4. Compare for byte-for-byte recovery (data without -0.0 or NaN payloads)</span>
 <span class="term-cmd">cmp input.bin input.unsorted.bin</span></pre>
     </div>
     <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> The verifier and signer are provided as native Linux ELF binaries that require glibc 2.14 or newer, including under WSL2, for broad compatibility across Linux environments. No Python installation or external dependencies are required.</p>
@@ -130,7 +153,7 @@ EOF</span></pre>
 <span class="term-dim"># 3. Check the binaries against the list</span>
 <span class="term-cmd">sha256sum -c SHA256SUMS</span></pre>
     </div>
-    <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> Run steps 1 and 2 on any machine with OpenSSL 3.x, then run step 3 on the machine where the binaries will run. Compare the fingerprint with a second source, such as the message that delivered your files, because files and checksums that arrive together can be replaced together. These values belong to the current release and change when the binaries are rebuilt.</p>
+    <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> Run steps 1 and 2 on any machine with OpenSSL 3.x, then run step 3 on the machine where the binaries will run. Compare the fingerprint with the one in the email that delivered your files, because files and checksums that arrive together can be replaced together. These values belong to the current release and change when the binaries are rebuilt.</p>
 
     <h3 class="spec__sub reveal-text">verify output</h3>
     <div class="terminal glass reveal-image">
@@ -145,10 +168,17 @@ EOF</span></pre>
     </div>
 
     <h3 class="spec__sub reveal-text">Layer 2: Sign and Verify with verify_v2</h3>
-    <p class="test-note reveal-text" style="margin-bottom:14px;">Continues from the sorted file above. Sign it once with your private key, then verify with the matching public key. <code>verify_v2</code> authenticates the exact bytes first, then runs the same logical verification as <code>verify</code>.</p>
+    <p class="test-note reveal-text" style="margin-bottom:14px;">Continues from the sorted file above. Generate your own key pair once, sign the sorted file with the private key, then verify with the matching public key. I never hold your private key. <code>verify_v2</code> authenticates the exact bytes first, then runs the same logical verification as <code>verify</code>.</p>
     <div class="terminal glass reveal-image">
       <div class="terminal-bar"><span class="terminal-title">pcmp_sign &middot; verify_v2 &middot; abbreviated</span></div>
-      <pre class="terminal-body"><span class="term-dim"># 5. Sign the sorted file (prompts for the private-key passphrase)</span>
+      <pre class="terminal-body"><span class="term-dim"># 5. Generate your own key pair (once; prompts for a passphrase)</span>
+<span class="term-cmd">./pcmp_sign keygen \
+  --private-key pcmp_ed25519_private.pem \
+  --public-key pcmp_ed25519_public.pem</span>
+Private key: pcmp_ed25519_private.pem (encrypted; keep secret)
+Public key:  pcmp_ed25519_public.pem (distribute through a trusted channel)
+
+<span class="term-dim"># 6. Sign the sorted file (prompts for the private-key passphrase)</span>
 <span class="term-cmd">./pcmp_sign sign input.sorted.pcmp \
   --private-key pcmp_ed25519_private.pem \
   --key-id my-prod-key</span>
@@ -157,8 +187,9 @@ SHA-256:        64c9031104bc&hellip;
 Key ID:         my-prod-key
 Manifest:       input.sorted.pcmp.manifest.json
 
-<span class="term-dim"># 6. Verify authenticity first, then the contents</span>
+<span class="term-dim"># 7. Verify authenticity first, then the contents</span>
 <span class="term-cmd">./verify_v2 input.sorted.pcmp \
+  --manifest input.sorted.pcmp.manifest.json \
   --public-key pcmp_ed25519_public.pem \
   --expected-key-id my-prod-key \
   --info</span>
