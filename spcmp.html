@@ -72,7 +72,7 @@
       <ul class="spec__list">
         <li><b>Canonical:</b> one deterministic form per dataset, regardless of the machine. Cross-hardware results are in the Test Reports.</li>
         <li><b>Tamper-evident:</b> changes to the committed content fail verification. In an exhaustive bit-flip test on a 1,000-element file, 38,430 of 38,440 flips were rejected. The other 10 decoded to identical content. <a href="integrity.html#tested" style="color:var(--gold);">See the test &rarr;</a></li>
-        <li><b>Reversible:</b> <code>unsort</code> restores the original array and its order, bit for bit. The one exception is that signed zeros and NaN payloads are collapsed by design: <code>-0.0</code> returns as <code>+0.0</code>, and any NaN returns as one canonical quiet NaN.</li>
+        <li><b>Reversible:</b> <code>unsort</code> restores the original bytes and order. The one exception is signed zeros and NaN payloads, which are collapsed to a canonical form by design.</li>
         <li><b>Not a speed tax:</b> at 100 million elements, SPCMP is faster than <code>numpy.quicksort</code> on 18 of 20 dataset types in both runs. On uniform and normal data: 4.65&times; and 4.40&times; (CPU run), 4.77&times; and 4.31&times; (GPU run), and up to 27.09&times; on duplicate-heavy data. It is slower on subnormal and sawtooth data, and below roughly 100,000 elements. SPCMP&rsquo;s timings include compression and the unsort record, which the other sorts do not produce. Charts below.</li>
       </ul>
       <p class="test-note" style="margin-top:14px;"><b>Where SPCMP stops:</b> the Merkle commitment establishes what the data contains. It does not establish who created the file. Authenticated Verification does: a detached digital signature binds the exact finished file to an authorized signing key, and is checked before the file is trusted. See <a href="integrity.html" style="color:var(--gold);">Three Layers of Integrity &rarr;</a></p>
@@ -83,14 +83,14 @@
   <section id="why-float32">
     <div class="section-head reveal-text">
       <h2>Why Float32?</h2>
-      <p>SPCMP is a container for float32 numbers, not a general file format. Here is where it fits, where it doesn&rsquo;t, and what I tested.</p>
+      <p>SPCMP is a sealed format for float32 data, not a general-purpose one. Here is where it fits, where it doesn&rsquo;t, and what I tested.</p>
     </div>
     <div class="spec reveal-text">
-      <div class="spec__row"><span class="spec__label">The Short Answer</span><p>SPCMP is built around float32 problems: signed zeros, NaN payloads, and one dataset stored in many byte orders. That is where a canonical form and a content commitment earn their keep.</p></div>
+      <div class="spec__row"><span class="spec__label">The Short Answer</span><p>SPCMP is built around the problems float32 data has: signed zeros, NaN payloads, and the same values arriving in different orders. A canonical form and a content commitment earn their keep there.</p></div>
       <div class="spec__row"><span class="spec__label">Where It Fits</span><p>Numeric data you already hold as float32, such as model weights, embeddings, sensor logs and numeric database columns. Export to float32.bin, seal it, and restore it bit for bit, apart from the signed zeros and NaN payloads that SPCMP collapses by design.</p></div>
       <div class="spec__row"><span class="spec__label">Where It Doesn&rsquo;t</span><p>Text and integer data. A general compressor and a plain hash do the job, and SPCMP adds little. Incompressible data such as random bytes can come out slightly larger than the input.</p></div>
       <div class="spec__row"><span class="spec__label">Other Data</span><p>Do not reinterpret raw bytes as float32 bit patterns: a word that happens to form a NaN or a negative zero would be changed. Encoding each byte as the float value 0.0 to 255.0 is safe, because none of those values is a NaN or a negative zero, but it quadruples the size before compression.</p></div>
-      <div class="spec__row"><span class="spec__label">One Test</span><p>A 29.3 MiB SQLite database encoded this way, including 1 MiB of random bytes and all 256 byte values, round-tripped bit for bit through a 2.2 MiB sealed file. On the same file zstd -19 produced 1.29 MiB and xz -9 produced 1.24 MiB, so a general compressor did better on size. SPCMP&rsquo;s value here is the commitment and the exact restore.</p></div>
+      <div class="spec__row"><span class="spec__label">One Test</span><p>A 29.3 MiB SQLite database encoded this way, including 1 MiB of random bytes and all 256 byte values, round-tripped bit for bit through a 2.2 MiB sealed file. On the same file zstd -19 produced 1.29 MiB and xz -9 produced 1.24 MiB, so a general compressor did better on size. Either, paired with a plain hash and signature, also restores exact bytes. What SPCMP adds is what those do not: verification that fails closed before the file is parsed, limits that hold against hostile input, and a content commitment that survives recompression.</p></div>
       <div class="spec__row"><span class="spec__label">The Pipeline</span><p>Database to float32.bin, seal, sign, encrypt, store. Then decrypt, verify, unsort and load back. <a href="integrity.html#story" style="color:var(--gold);">See it step by step &rarr;</a></p></div>
     </div>
   </section>
@@ -112,7 +112,7 @@
 <span class="term-dim"># 3. Reconstruct the original array</span>
 <span class="term-cmd">./spcmp unsort input</span>
 
-<span class="term-dim"># 4. Compare for byte-for-byte recovery (data without -0.0 or NaN payloads)</span>
+<span class="term-dim"># 4. Compare for byte-for-byte recovery (data without signed zeros or NaN payloads)</span>
 <span class="term-cmd">cmp input.bin input.unsorted.bin</span></pre>
     </div>
     <p class="test-note reveal-text" style="margin-top:14px;"><b>Note:</b> The verifier and signer are provided as native Linux ELF binaries that require glibc 2.14 or newer, including under WSL2, for broad compatibility across Linux environments. No Python installation or external dependencies are required.</p>
